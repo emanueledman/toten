@@ -11,13 +11,11 @@ class TotemAuthService {
         this.validateTokenOnStart();
     }
     
-    // Validar token salvo ao iniciar
     validateTokenOnStart() {
         try {
             const token = this.getToken();
             if (!token) return;
             
-            // Verificar se o token tem formato válido
             const tokenParts = token.split('.');
             if (tokenParts.length !== 3) {
                 console.warn("Token inválido encontrado. Removendo...");
@@ -29,13 +27,11 @@ class TotemAuthService {
         }
     }
 
-    // Configurar interceptadores do Axios
     setupAxiosInterceptors() {
         axios.interceptors.request.use(
             (config) => {
                 const token = this.getToken();
                 if (token) {
-                    // Garantir que só haja um "Bearer"
                     if (token.startsWith('Bearer ')) {
                         config.headers['Authorization'] = token;
                     } else {
@@ -47,10 +43,12 @@ class TotemAuthService {
                 }
                 return config;
             },
-            (error) => Promise.reject(error)
+            (error) => {
+                console.error("Erro no interceptor de requisição:", error);
+                return Promise.reject(error);
+            }
         );
 
-        // Interceptor para erros de autenticação
         axios.interceptors.response.use(
             (response) => response,
             (error) => {
@@ -66,19 +64,16 @@ class TotemAuthService {
         );
     }
 
-    // Sanitizar entradas para prevenir XSS
     sanitizeInput(input) {
         const div = document.createElement('div');
         div.textContent = input;
         return div.innerHTML;
     }
 
-    // Obter token de autenticação (prioriza localStorage)
     getToken() {
         return localStorage.getItem('totemToken') || sessionStorage.getItem('totemToken');
     }
 
-    // Verificar se o totem está autenticado
     isAuthenticated() {
         const token = this.getToken();
         const branchId = localStorage.getItem('branchId') || sessionStorage.getItem('branchId');
@@ -92,9 +87,7 @@ class TotemAuthService {
         return false;
     }
 
-    // Armazenar dados de autenticação
     storeAuthData(data, rememberMe) {
-        // Verificar dados mínimos necessários
         if (!data || !data.token || !data.branch_id) {
             console.error("Dados de autenticação inválidos:", data);
             return false;
@@ -102,11 +95,9 @@ class TotemAuthService {
         
         const storage = rememberMe ? localStorage : sessionStorage;
         
-        // Limpar dados existentes para evitar conflitos
         this.clearAuthData();
         
         try {
-            // Armazenar novos dados
             storage.setItem('totemToken', data.token);
             storage.setItem('branchId', data.branch_id);
             if (data.branch_name) storage.setItem('branchName', data.branch_name);
@@ -122,7 +113,6 @@ class TotemAuthService {
         }
     }
 
-    // Obter informações do totem
     getTotemInfo() {
         return {
             branchId: localStorage.getItem('branchId') || sessionStorage.getItem('branchId'),
@@ -130,7 +120,6 @@ class TotemAuthService {
         };
     }
 
-    // Definir informações do totem na interface
     setTotemInfoUI() {
         const info = this.getTotemInfo();
         
@@ -141,7 +130,6 @@ class TotemAuthService {
         console.debug("Interface de totem atualizada com sucesso");
     }
 
-    // Limpar dados de autenticação
     clearAuthData() {
         const keys = ['totemToken', 'branchId', 'branchName'];
         keys.forEach(key => {
@@ -151,7 +139,6 @@ class TotemAuthService {
         console.info("Dados de autenticação do totem limpos");
     }
 
-    // Realizar login do totem
     async login(branchId, password, rememberMe = false) {
         try {
             const sanitizedBranchId = this.sanitizeInput(branchId.trim());
@@ -162,23 +149,29 @@ class TotemAuthService {
                 `${API_BASE}/api/totem/login`,
                 { branch_id: sanitizedBranchId, password },
                 {
-                    headers: { 'Content-Type': 'application/json' },
-                    timeout: 15000 // 15s timeout
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    timeout: 15000,
+                    withCredentials: true // Habilitar para suportar CORS com credenciais
                 }
             );
             
-            console.debug("Resposta de login recebida:", response.status);
+            console.debug("Resposta de login recebida:", {
+                status: response.status,
+                data: response.data
+            });
             
             const data = response.data;
-            if (!data || !data.success || !data.token) {
-                console.error("Token não encontrado na resposta:", data);
+            if (!data || typeof data !== 'object' || !data.success || !data.token) {
+                console.error("Resposta inválida do servidor:", data);
                 return {
                     success: false,
-                    message: 'Erro no servidor: token não recebido'
+                    message: 'Erro no servidor: resposta inválida ou token não recebido'
                 };
             }
             
-            // Armazenar dados
             const stored = this.storeAuthData(data, rememberMe);
             if (!stored) {
                 return {
@@ -192,9 +185,15 @@ class TotemAuthService {
                 branchId: data.branch_id
             };
         } catch (error) {
-            console.error('Erro de login do totem:', error);
+            console.error('Erro detalhado de login do totem:', {
+                message: error.message,
+                code: error.code,
+                response: error.response ? {
+                    status: error.response.status,
+                    data: error.response.data
+                } : null
+            });
             
-            // Mensagem específica baseada no erro
             let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
             
             if (error.response) {
@@ -208,12 +207,13 @@ class TotemAuthService {
                     errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
                 }
                 
-                // Usar mensagem do servidor se disponível
                 if (error.response.data && error.response.data.error) {
                     errorMessage = error.response.data.error;
                 }
             } else if (error.code === 'ECONNABORTED') {
                 errorMessage = 'Tempo limite de conexão excedido. Verifique sua internet.';
+            } else if (error.code === 'ERR_NETWORK') {
+                errorMessage = 'Falha na rede. Verifique sua conexão.';
             }
             
             return {
@@ -223,11 +223,9 @@ class TotemAuthService {
         }
     }
 
-    // Realizar logout
     async logout() {
         try {
             console.info("Iniciando logout do totem...");
-            // Não há endpoint de logout específico para totem, apenas limpar localmente
             this.clearAuthData();
         } catch (error) {
             console.error('Erro ao fazer logout:', error);
@@ -237,13 +235,11 @@ class TotemAuthService {
         }
     }
 
-    // Redirecionar para página principal do totem
     redirectToTotemDashboard() {
         console.info("Redirecionando para dashboard do totem");
         window.location.href = '/totem-dashboard.html';
     }
 
-    // Verificar autenticação e redirecionar se necessário
     checkAuthAndRedirect() {
         if (!this.isAuthenticated()) {
             console.warn("Totem não autenticado, redirecionando para login");
