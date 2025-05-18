@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem de Autoatendimento e Tela de Acompanhamento - Conservatória de Luanda</title>
+    <title>Totem de Autoatendimento - Conservatória de Luanda</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
@@ -27,7 +27,7 @@
             --shadow-color: rgba(0, 0, 0, 0.3);
             --glass-effect: rgba(255, 255, 255, 0.1);
             --gradient-start: #c8102e;
-            --gradient-end: #a00d housing: linear-gradient(135deg, var(--background-color), var(--primary-color));
+            --gradient-end: #a00d26;
         }
 
         * {
@@ -296,7 +296,7 @@
             .logo-icon { width: 50px; height: 50px; font-size: 26px; }
         }
 
-        /* Estilos Gerais */
+        /* Estilos do Totem */
         body {
             background-color: var(--background-color);
             color: var(--text-light);
@@ -309,7 +309,7 @@
         .container {
             width: 100vw;
             height: 100vh;
-            display: none;
+            display: none; /* Inicialmente escondido até o carregamento terminar */
             flex-direction: column;
             padding: 0;
             position: relative;
@@ -649,21 +649,21 @@
 
         .btn::after {
             content: '';
-                position: absolute;
-                top: -50%;
-                left: -50%;
-                width: 200%;
-                height: 200%;
-                background: linear-gradient(
-                    to right,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.2) 50%,
-                    rgba(255, 255, 255, 0) 100%
-                );
-                transform: rotate(30deg);
-                animation: shine 4s infinite linear;
-                z-index: 1;
-                pointer-events: none;
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 4s infinite linear;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .footer {
@@ -731,60 +731,8 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Estilos Específicos da Tela de Acompanhamento */
-        .queue-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        .queue-card {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            border: 1px solid var(--glass-effect);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .queue-card h3 {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 10px;
-        }
-
-        .queue-card p {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.8);
-            margin: 8px 0;
-        }
-
-        .queue-status {
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .status-aberto { color: #22c55e; }
-        .status-fechado { color: #ef4444; }
-        .status-pausado { color: #f59e0b; }
-        .status-lotado { color: #d97706; }
-
-        .current-ticket {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--highlight-color);
-            margin: 15px 0;
-            text-shadow: 0 2px 4px var(--shadow-color);
-        }
-
         @media screen and (max-width: 1200px) {
-            .category-container, .service-list, .queue-container {
+            .category-container, .service-list {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
 
@@ -823,7 +771,7 @@
                 padding: 20px;
             }
 
-            .ticket-number, .current-ticket {
+            .ticket-number {
                 font-size: 48px;
             }
         }
@@ -847,8 +795,7 @@
         .high-contrast .category-card,
         .high-contrast .service-card,
         .high-contrast .confirmation-container,
-        .high-contrast .ticket-card,
-        .high-contrast .queue-card {
+        .high-contrast .ticket-card {
             background-color: #000;
             color: #fff;
             border: 2px solid #fff;
@@ -877,7 +824,7 @@
             <div class="loading-logo">
                 <div class="conference-logo">
                     <div class="conference-logo-inner">
-                        <img src="https://uniluanda.ao/wp-content/uploads/2024/01/LOGOTIPO-ID-2a-CONFERENCIA-1.png" alt="Logo da III Conferência Científica" class="conference-logo-image">
+                        <img src="https://uniluanda.ao/wp-content/uploads/2024/01/LOGOTIPO-ID-2a-CONFERENCIA-1.png" alt="Logo da II Conferência Científica" class="conference-logo-image">
                         <div class="loading-shine"></div>
                     </div>
                     <div class="loading-ripple"></div>
@@ -888,7 +835,8 @@
             <h1 class="loading-title">III Conferência Científica</h1>
             <div class="loading-year">2025</div>
             <div class="loading-subtitle">A COOPERAÇÃO PARA A DINAMIZAÇÃO DA INVESTIGAÇÃO, EXTENSÃO</div>
-            <div class="loading-subtitle">INOVAÇÃO E CAPACITAÇÃO HUMANA EM BENEFÍCIO DA SOCIEDADE</div>
+           <div class="loading-subtitle">INOVAÇÃO E CAPACITAÇÃO HUMANA EM BENEFÍCIO DA SOCIEDADE</div>
+           
             <div class="loading-loader">
                 <div class="loading-loader-bar" id="loading-loader-bar"></div>
             </div>
@@ -896,14 +844,14 @@
             <div class="loading-percentage" id="loading-percentage">0%</div>
         </div>
         <div class="loading-main-content">
-            <h1 class="loading-welcome-text" id="loading-welcome-text">Bem-vindo à Experiência da Inovação</h1>
+            <h1 class="loading-welcome-text">Bem-vindo à Experiência da Inovação</h1>
             <p style="font-size: 18px; margin-bottom: 20px; color: var(--secondary-light);">
-                Preparando o sistema...
+                Preparando o Totem de Autoatendimento...
             </p>
         </div>
     </div>
 
-    <!-- Interface Principal -->
+    <!-- Interface do Totem -->
     <div class="container" role="main">
         <div class="header" role="banner">
             <div class="conservatory-info">
@@ -921,7 +869,7 @@
             </div>
         </div>
 
-        <div class="accessibility-controls" role="region" aria-label="Controles de Acessibilidade" id="accessibility-controls">
+        <div class="accessibility-controls" role="region" aria-label="Controles de Acessibilidade">
             <button class="accessibility-btn" onclick="toggleHighContrast()" title="Alto Contraste" aria-label="Ativar alto contraste">
                 <i class="fas fa-adjust"></i>
             </button>
@@ -934,20 +882,20 @@
         </div>
 
         <div class="main-content">
-            <div class="welcome-message" id="welcome-message">
-                <h2 id="welcome-title">Bem-vindo!</h2>
-                <p id="welcome-subtitle">Selecione uma categoria para retirar sua senha</p>
+            <div class="welcome-message">
+                <h2>Bem-vindo!</h2>
+                <p>Selecione uma categoria para retirar sua senha</p>
             </div>
 
             <div class="content-area">
-                <!-- Tela de Categorias (Totem) -->
-                <div class="screen" id="categories-screen">
+                <!-- Tela de Categorias -->
+                <div class="screen active" id="categories-screen">
                     <div class="category-container" id="category-container">
                         <!-- Preenchido dinamicamente via JavaScript -->
                     </div>
                 </div>
 
-                <!-- Tela de Serviços (Totem) -->
+                <!-- Tela de Serviços -->
                 <div class="screen" id="services-screen">
                     <div class="service-list" id="service-list-container">
                         <!-- Preenchido dinamicamente via JavaScript -->
@@ -962,7 +910,7 @@
                     </div>
                 </div>
 
-                <!-- Tela de Confirmação (Totem) -->
+                <!-- Tela de Confirmação -->
                 <div class="screen" id="confirmation-screen">
                     <div class="confirmation-container">
                         <h2>Confirmar Serviço</h2>
@@ -997,7 +945,7 @@
                     </div>
                 </div>
 
-                <!-- Tela de Ticket (Totem) -->
+                <!-- Tela de Ticket -->
                 <div class="screen" id="ticket-screen">
                     <div class="ticket-container">
                         <div class="ticket-card">
@@ -1023,13 +971,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Tela de Acompanhamento (Tela) -->
-                <div class="screen" id="display-screen">
-                    <div class="queue-container" id="queue-container">
-                        <!-- Preenchido dinamicamente via JavaScript -->
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -1048,33 +989,11 @@
 
     <div class="loading-screen" id="loading-screen">
         <div class="spinner"></div>
-        <div class="loading-message">Carregando dados...</div>
+        <div class="loading-message">Gerando sua senha...</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
     <script>
-        // Configurações Gerais
-        const API_BASE_URL = 'https://fila-facilita2-0-juqg.onrender.com/api/totem';
-        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
-        const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb';
-
-        // Variáveis do Totem
-        let currentCategory = '';
-        let currentService = '';
-        let isBranchOpen = false;
-        let categoriesData = [];
-
-        // Variáveis da Tela
-        let queuesData = [];
-
-        // Ícones e cores padrão
-        const defaultIcons = ['fa-file-alt', 'fa-home', 'fa-building', 'fa-pen', 'fa-folder', 'fa-cog'];
-        const defaultColors = ['#1d3557', '#457b9d', '#f4a261', '#2a9d8f', '#6b7280', '#9ca3af'];
-
-        // Detectar modo (totem ou tela)
-        const path = window.location.pathname.toLowerCase();
-        const isDisplayMode = path.includes('/tela');
-
         // Script da Página de Carregamento
         const loadingParticlesContainer = document.getElementById('loading-particles');
         const particleCount = 30;
@@ -1129,18 +1048,30 @@
                     setTimeout(() => {
                         document.querySelector('.loading-container').style.display = 'none';
                         document.querySelector('.container').style.display = 'flex';
-                        initializeMode();
                     }, 2000);
                 }, 1000);
                 return;
             }
 
-            progress = Math.min(progress + 3.33, 100);
+            progress = Math.min(progress + 3.33, 100); // Progresso linear para 3s
             percentageElement.textContent = `${Math.round(progress)}%`;
             loaderBar.style.width = `${progress}%`;
         }, 100);
 
-        // Funções Auxiliares
+        // Script do Totem
+        const API_BASE_URL = 'https://fila-facilita2-0-juqg.onrender.com/api/totem';
+        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb';
+
+        let currentCategory = '';
+        let currentService = '';
+        let isBranchOpen = false;
+        let categoriesData = [];
+        let queuesData = [];
+
+        const defaultIcons = ['fa-file-alt', 'fa-home', 'fa-building', 'fa-pen', 'fa-folder', 'fa-cog'];
+        const defaultColors = ['#1d3557', '#457b9d', '#f4a261', '#2a9d8f', '#6b7280', '#9ca3af'];
+
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -1165,57 +1096,12 @@
             setTimeout(() => messageDiv.remove(), 5000);
         }
 
-        function showLoading(show, message = 'Carregando dados...') {
-            const loadingscreen = document.getElementById('loading-screen');
+        function showLoading(show, message = 'Gerando sua senha...') {
+            const loadingScreen = document.getElementById('loading-screen');
             loadingScreen.querySelector('.loading-message').textContent = message;
             loadingScreen.classList.toggle('active', show);
         }
 
-        function toggleHighContrast() {
-            document.body.classList.toggle('high-contrast');
-        }
-
-        function increaseFontSize() {
-            const currentSize = parseFloat(getComputedStyle(document.body).fontSize);
-            document.body.style.fontSize = `${currentSize + 2}px`;
-        }
-
-        function toggleVirtualKeyboard() {
-            showMessage('Teclado virtual não implementado. Use o teclado físico ou entre em contato com o suporte.', 'error');
-        }
-
-        function toggleHelp() {
-            showMessage('Para assistência, entre em contato com o suporte no local ou ligue para +244 222 123 456.', 'error');
-        }
-
-        // Inicialização do Modo
-        function initializeMode() {
-            const welcomeTitle = document.getElementById('welcome-title');
-            const welcomeSubtitle = document.getElementById('welcome-subtitle');
-            const accessibilityControls = document.getElementById('accessibility-controls');
-            const loadingWelcomeText = document.getElementById('loading-welcome-text');
-
-            if (isDisplayMode) {
-                // Modo Tela
-                welcomeTitle.textContent = 'Acompanhamento de Filas';
-                welcomeSubtitle.textContent = 'Monitoramento em tempo real das filas da Conservatória';
-                accessibilityControls.style.display = 'flex'; // Mostrar controles de acessibilidade
-                loadingWelcomeText.textContent = 'Bem-vindo à Tela de Acompanhamento';
-                loadQueues();
-                startQueuePolling();
-                showScreen('display-screen');
-            } else {
-                // Modo Totem
-                welcomeTitle.textContent = 'Bem-vindo!';
-                welcomeSubtitle.textContent = 'Selecione uma categoria para retirar sua senha';
-                accessibilityControls.style.display = 'flex';
-                loadingWelcomeText.textContent = 'Bem-vindo à Experiência da Inovação';
-                loadCategories();
-                showScreen('categories-screen');
-            }
-        }
-
-        // Funções do Modo Totem
         async function loadCategories() {
             showLoading(true, 'Carregando serviços...');
             try {
@@ -1317,7 +1203,7 @@
                 return;
             }
 
-            showLoading(true, 'Gerando sua senha...');
+            showLoading(true);
             try {
                 const response = await axios.post(
                     `${API_BASE_URL}/branches/${BRANCH_ID}/services/${currentService}/ticket`,
@@ -1357,6 +1243,40 @@
             }
         }
 
+        async function loadQueues() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/display_queues`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN },
+                    timeout: 10000,
+                });
+                queuesData = response.data.queues;
+            } catch (error) {
+                console.error('Erro ao carregar filas:', error);
+            }
+        }
+
+        function startQueuePolling() {
+            loadQueues();
+            setInterval(loadQueues, 30000);
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        function increaseFontSize() {
+            const currentSize = parseFloat(getComputedStyle(document.body).fontSize);
+            document.body.style.fontSize = `${currentSize + 2}px`;
+        }
+
+        function toggleVirtualKeyboard() {
+            showMessage('Teclado virtual não implementado. Use o teclado físico ou entre em contato com o suporte.', 'error');
+        }
+
+        function toggleHelp() {
+            showMessage('Para assistência, entre em contato com o suporte no local ou ligue para +244 222 123 456.', 'error');
+        }
+
         function showCategories() {
             currentCategory = '';
             showScreen('categories-screen');
@@ -1368,60 +1288,9 @@
             showScreen('categories-screen');
         }
 
-        // Funções do Modo Tela
-        async function loadQueues() {
-            showLoading(true, 'Carregando filas...');
-            try {
-                const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/display`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN },
-                    timeout: 10000,
-                    params: { refresh: true }
-                });
-                queuesData = response.data.queues;
-                updateQueueScreen();
-                showMessage(response.data.message || 'Filas atualizadas com sucesso', 'success');
-            } catch (error) {
-                const errorMessage = error.response?.data?.error || 'Erro ao carregar filas. Tente novamente.';
-                showMessage(errorMessage, 'error');
-                updateQueueScreen(true);
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function updateQueueScreen(error = false) {
-            const queueContainer = document.getElementById('queue-container');
-            queueContainer.innerHTML = '';
-
-            if (error || queuesData.length === 0) {
-                queueContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Nenhuma fila disponível no momento.</p>';
-                return;
-            }
-
-            queuesData.forEach(queue => {
-                const queueCard = document.createElement('div');
-                queueCard.className = 'queue-card';
-                queueCard.innerHTML = `
-                    <h3>${queue.service_name}</h3>
-                    <p>Departamento: ${queue.department_name}</p>
-                    <p>Senhas Ativas: ${queue.active_tickets}</p>
-                    <p>Tempo Estimado: ${queue.estimated_wait_time ? queue.estimated_wait_time.toFixed(1) + ' min' : 'Indisponível'}</p>
-                    <div class="current-ticket">${queue.current_ticket?.ticket_number || 'N/A'}</div>
-                    <p>Guichê: ${queue.current_ticket?.counter || 'N/A'}</p>
-                    <div class="queue-status status-${queue.status.toLowerCase()}">${queue.status}</div>
-                `;
-                queueContainer.appendChild(queueCard);
-            });
-        }
-
-        function startQueuePolling() {
-            loadQueues();
-            setInterval(loadQueues, 30000);
-        }
-
-        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            // A inicialização ocorre após o carregamento, no final da animação de loading
+            loadCategories();
+            startQueuePolling();
         });
     </script>
 </body>
