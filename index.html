@@ -3,36 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Fila Fácil</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Totem Fila Facilita</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: #0054a6;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 20px;
+        }
+        
+        .screen {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        input, button {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 100%;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #0054a6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #003b75;
+        }
+        
+        .category-item, .service-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-left: 4px solid #0054a6;
+        }
+        
+        .category-item:hover, .service-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .error-message {
+            color: #d9534f;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        #login-error {
+            color: #d9534f;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .btn-link {
+            color: #0054a6;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 14px;
+            display: inline-block;
+            width: auto;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .ticket-success {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .ticket-success h2 {
+            color: #28a745;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .download-link:hover {
+            background-color: #218838;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 10px;
+            }
+            
+            .screen {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="login-screen" class="screen">
-        <h1>Bem-vindo ao Totem</h1>
-        <input type="text" id="branch-id" placeholder="Digite o ID da Filial" />
-        <button onclick="login()">Entrar</button>
-        <p id="login-error" class="error"></p>
+    <div class="container">
+        <div class="header">
+            <h1>Totem Fila Facilita</h1>
+        </div>
+        
+        <!-- Tela de Login -->
+        <div id="login-screen" class="screen">
+            <h2>Login da Filial</h2>
+            <div>
+                <label for="branch-id">ID da Filial:</label>
+                <input type="text" id="branch-id" placeholder="Digite o ID da filial">
+                <div id="login-error"></div>
+                <button id="login-button" onclick="login()">Entrar</button>
+            </div>
+            <div class="example">
+                <p>Exemplo de ID: d0b19c4d-a9e4-46cf-a81a-714eab48ebbb</p>
+            </div>
+        </div>
+        
+        <!-- Tela de Categorias -->
+        <div id="categories-screen" class="screen hidden">
+            <h2>Categorias de Serviços</h2>
+            <div id="categories-list">
+                <!-- Lista de categorias será preenchida aqui -->
+            </div>
+            <div class="navigation">
+                <button id="logout-button" onclick="logout()">Sair</button>
+            </div>
+        </div>
+        
+        <!-- Tela de Serviços -->
+        <div id="services-screen" class="screen hidden">
+            <h2 id="category-title">Serviços</h2>
+            <div id="services-list">
+                <!-- Lista de serviços será preenchida aqui -->
+            </div>
+            <div class="navigation">
+                <button id="back-button" onclick="backToCategories()">Voltar</button>
+            </div>
+        </div>
+        
+        <!-- Tela de Senha Gerada -->
+        <div id="ticket-screen" class="screen hidden">
+            <div class="ticket-success">
+                <h2>Senha Gerada com Sucesso!</h2>
+                <p id="ticket-info">Sua senha está pronta.</p>
+                <a id="ticket-download" class="download-link" href="#" download>Baixar Senha (PDF)</a>
+                <button id="ticket-done" onclick="backToCategories()">Voltar para Categorias</button>
+            </div>
+        </div>
     </div>
-
-    <div id="categories-screen" class="screen hidden">
-        <h1>Escolha uma Categoria</h1>
-        <div id="categories-list"></div>
-        <button onclick="logout()">Sair</button>
-    </div>
-
-    <div id="services-screen" class="screen hidden">
-        <h1 id="category-title">Serviços</h1>
-        <div id="services-list"></div>
-        <button onclick="backToCategories()">Voltar</button>
-    </div>
-
-    <div id="ticket-screen" class="screen hidden">
-        <h1>Senha Gerada</h1>
-        <p id="ticket-info"></p>
-        <a id="ticket-download" href="#" download>Baixar Senha (PDF)</a>
-        <button onclick="backToCategories()">Nova Senha</button>
-    </div>
-
-    <script src="script.js"></script>
+    
+    <!-- Alternativa para carregar o script -->
+    <script src="script.js" onerror="alert('Erro ao carregar o script. Verifique a conexão.')"></script>
 </body>
 </html>
