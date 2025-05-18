@@ -143,7 +143,8 @@ class TotemAuthService {
         try {
             const sanitizedBranchId = this.sanitizeInput(branchId.trim());
             
-            console.info(`Tentando login do totem para branchId ${sanitizedBranchId}`);
+            console.info(`Iniciando login do totem para branchId ${sanitizedBranchId}`);
+            console.debug("Enviando requisição para:", `${API_BASE}/api/totem/login`);
             
             const response = await axios.post(
                 `${API_BASE}/api/totem/login`,
@@ -153,8 +154,7 @@ class TotemAuthService {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    timeout: 15000,
-                    withCredentials: true // Habilitar para suportar CORS com credenciais
+                    timeout: 20000 // Aumentado para 20s para evitar timeout precoce
                 }
             );
             
@@ -190,7 +190,8 @@ class TotemAuthService {
                 code: error.code,
                 response: error.response ? {
                     status: error.response.status,
-                    data: error.response.data
+                    data: error.response.data,
+                    headers: error.response.headers
                 } : null
             });
             
@@ -211,9 +212,11 @@ class TotemAuthService {
                     errorMessage = error.response.data.error;
                 }
             } else if (error.code === 'ECONNABORTED') {
-                errorMessage = 'Tempo limite de conexão excedido. Verifique sua internet.';
+                errorMessage = 'Tempo limite de conexão excedido. Tente novamente.';
             } else if (error.code === 'ERR_NETWORK') {
-                errorMessage = 'Falha na rede. Verifique sua conexão.';
+                errorMessage = 'Falha na conexão com o servidor. Verifique sua rede.';
+            } else if (error.message.includes('CORS')) {
+                errorMessage = 'Erro de configuração de CORS. Contate o administrador.';
             }
             
             return {

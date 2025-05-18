@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.debug("Evento de submissão do formulário disparado");
 
                 // Mostrar indicador de carregamento
                 showLoading(true);
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showMessage('Erro inesperado. Verifique sua conexão e tente novamente.', 'error');
                 } finally {
                     // Sempre esconder o indicador de carregamento
+                    console.debug("Escondendo indicador de carregamento");
                     showLoading(false);
                 }
             });
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 passwordInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
+                        console.debug("Tecla Enter pressionada no campo de senha");
                         loginForm.dispatchEvent(new Event('submit'));
                     }
                 });
