@@ -1,46 +1,187 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração do Totem</title>
+    <title>Totem Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.25.6/Babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 9999;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">Configuração do Totem</h1>
-        <form id="totem-config-form" class="space-y-4">
-            <div>
-                <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
-                <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="ID da Filial" required>
+<body>
+    <div id="root" class="min-h-screen bg-gray-100"></div>
+
+    <script type="text/babel">
+        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        const API_BASE_URL = 'http://localhost:5000/api/totem'; // Adjust to your backend URL
+
+        const ServiceCard = ({ service, onSelect, isDisabled }) => (
+            <button
+                onClick={() => onSelect(service)}
+                disabled={isDisabled}
+                className={`w-full p-4 mb-2 rounded-lg shadow-md text-left 
+                    ${isDisabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-white hover:bg-blue-100'}`}
+            >
+                <h3 className="text-lg font-semibold">{service.service_name}</h3>
+                <p className="text-sm text-gray-600">
+                    Fila: {service.active_tickets} pessoas | Tempo estimado: {service.estimated_wait_time}
+                </p>
+            </button>
+        );
+
+        const CategorySection = ({ category, services, onServiceSelect, isBranchOpen }) => (
+            <div className="mb-6">
+                <h2 className="text-xl font-bold mb-3">{category.category_name}</h2>
+                <div className="grid gap-2">
+                    {services.map(service => (
+                        <ServiceCard
+                            key={service.service_id}
+                            service={service}
+                            onSelect={onServiceSelect}
+                            isDisabled={!isBranchOpen}
+                        />
+                    ))}
+                </div>
             </div>
-            <div>
-                <label for="branch-name" class="block text-sm font-medium text-gray-700">Nome da Filial (opcional)</label>
-                <input type="text" id="branch-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nome da Filial">
+        );
+
+        const QueueDisplay = ({ queues }) => (
+            <div className="bg-blue-100 p-4 rounded-lg shadow-md mb-6">
+                <h2 className="text-xl font-bold mb-3">Filas Ativas</h2>
+                {queues.length === 0 ? (
+                    <p className="text-gray-600">Nenhuma fila ativa no momento</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {queues.map(queue => (
+                            <div key={queue.queue_id} className="bg-white p-3 rounded-md">
+                                <h3 className="font-semibold">{queue.service_name}</h3>
+                                <p>Senha Atual: {queue.current_ticket}</p>
+                                <p>Pessoas na Fila: {queue.active_tickets}</p>
+                                <p>Tempo Estimado: {queue.estimated_wait_time}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
-            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Salvar Configuração</button>
-        </form>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="totem-auth.js"></script>
+        );
+
+        const App = () => {
+            const [branchId, setBranchId] = React.useState('1'); // Default branch ID
+            const [categories, setCategories] = React.useState([]);
+            const [queues, setQueues] = React.useState([]);
+            const [branchStatus, setBranchStatus] = React.useState({ is_open: false, message: '' });
+            const [loading, setLoading] = React.useState(false);
+            const [error, setError] = React.useState(null);
+            const [message, setMessage] = React.useState('');
+
+            // Fetch services for the branch
+            const fetchServices = async () => {
+                setLoading(true);
+                setError(null);
+                try {
+                    const response = await axios.get(`${API_BASE_URL}/branches/${branchId}/services`, {
+                        headers: { 'Totem-Token': TOTEM_TOKEN }
+                    });
+                    setCategories(response.data.categories);
+                    setBranchStatus(response.data.branch_status);
+                    setMessage(response.data.message);
+                } catch (err) {
+                    setError(err.response?.data?.error || 'Erro ao carregar serviços');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Fetch active queues for display
+            const fetchQueues = async () => {
+                try {
+                    const response = await axios.get(`${API_BASE_URL}/branches/${branchId}/display_queues`, {
+                        headers: { 'Totem-Token': TOTEM_TOKEN }
+                    });
+                    setQueues(response.data.queues);
+                } catch (err) {
+                    setError(err.response?.data?.error || 'Erro ao carregar filas');
+                }
+            };
+
+            // Generate ticket for selected service
+            const generateTicket = async (service) => {
+                setLoading(true);
+                setError(null);
+                try {
+                    const response = await axios.post(
+                        `${API_BASE_URL}/branches/${branchId}/services/${service.service_id}/ticket`,
+                        {},
+                        {
+                            headers: { 'Totem-Token': TOTEM_TOKEN },
+                            responseType: 'blob'
+                        }
+                    );
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `ticket_${service.service_name}.pdf`);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    setMessage('Ticket gerado com sucesso!');
+                    fetchQueues(); // Refresh queue display
+                } catch (err) {
+                    setError('Erro ao gerar ticket');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            React.useEffect(() => {
+                if (branchId) {
+                    fetchServices();
+                    fetchQueues();
+                }
+            }, [branchId]);
+
+            return (
+                <div className="container mx-auto p-4">
+                    <h1 className="text-3xl font-bold mb-6 text-center">Totem de Atendimento</h1>
+                    
+                    {/* Branch Status */}
+                    <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+                        <h2 className="text-lg font-semibold">
+                            Status da Filial: {branchStatus.is_open ? 'Aberta' : 'Fechada'}
+                        </h2>
+                        <p className="text-gray-600">{branchStatus.message}</p>
+                    </div>
+
+                    {/* Queue Display */}
+                    <QueueDisplay queues={queues} />
+
+                    {/* Service Selection */}
+                    <div className="bg-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-2xl font-bold mb-4">Selecionar Serviço</h2>
+                        {loading && <p className="text-blue-600">Carregando...</p>}
+                        {error && <p className="text-red-600">{error}</p>}
+                        {message && <p className="text-green-600">{message}</p>}
+                        {categories.length === 0 && !loading && (
+                            <p className="text-gray-600">Nenhum serviço disponível no momento</p>
+                        )}
+                        {categories.map(category => (
+                            <CategorySection
+                                key={category.category_id}
+                                category={category}
+                                services={category.services}
+                                onServiceSelect={generateTicket}
+                                isBranchOpen={branchStatus.is_open}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
