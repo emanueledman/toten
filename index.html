@@ -1,278 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Facilita - Login e Serviços</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <title>Totem Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 800px;
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-            font-size: 2em;
-        }
-        input[type="text"] {
-            padding: 10px;
-            font-size: 1.2em;
-            width: 80%;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1.2em;
-            background-color: #28a745;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .category, .service {
-            margin: 10px 0;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .service:hover, .category:hover {
-            background: #d3d3d3;
-        }
-        .queue-display {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-        .error {
-            color: red;
-            font-size: 1.1em;
-        }
-        .success {
-            color: green;
-            font-size: 1.1em;
-        }
-        #queueList div {
-            font-size: 1.2em;
-            margin: 5px 0;
+            z-index: 9999;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Totem Facilita</h1>
-        <div id="loginSection">
-            <input type="text" id="branchId" placeholder="Digite o ID da Filial" />
-            <button onclick="login()">Entrar</button>
-        </div>
-        <div id="servicesSection" style="display: none;">
-            <h2>Serviços Disponíveis</h2>
-            <div id="branchStatus"></div>
-            <div id="categories"></div>
-            <button onclick="showCategories()">Voltar para Categorias</button>
-            <div id="services"></div>
-        </div>
-        <div id="queueSection" class="queue-display">
-            <h2>Filas Ativas</h2>
-            <div id="queueList"></div>
-        </div>
-        <p id="message"></p>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div id="loading-overlay" class="hidden">Carregando...</div>
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Totem Login</h1>
+        <form id="totem-login-form" class="space-y-4">
+            <div>
+                <label for="branch-id" class="block text-sm font-medium text-gray-700">Branch ID</label>
+                <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Branch ID" required>
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Senha" required>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="remember-me" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                <label for="remember-me" class="ml-2 block text-sm text-gray-900">Lembrar-me</label>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+        </form>
     </div>
-
-    <script>
-        const API_URL = 'https://fila-facilita2-0-4uzw.onrender.com/api/totem/branches/';
-        const SOCKET_URL = 'https://fila-facilita2-0-4uzw.onrender.com';
-        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
-        let branchId = null;
-        let socket = null;
-
-        async function login() {
-            branchId = document.getElementById('branchId').value.trim();
-            if (!branchId) {
-                showMessage('Por favor, insira o ID da filial.', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}${branchId}/services`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('servicesSection').style.display = 'block';
-                    displayBranchStatus(data.branch_status);
-                    displayCategories(data.categories);
-                    initializeSocket();
-                    loadQueues();
-                    showMessage('Login bem-sucedido!', 'success');
-                } else {
-                    showMessage(data.error || 'Erro ao carregar serviços.', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro ao conectar com o servidor.', 'error');
-                console.error(error);
-            }
-        }
-
-        function displayBranchStatus(status) {
-            const statusDiv = document.getElementById('branchStatus');
-            statusDiv.innerHTML = `<p>Filial: ${status.is_open ? 'Aberta' : 'Fechada'} - ${status.message}</p>`;
-        }
-
-        function displayCategories(categories) {
-            const categoriesDiv = document.getElementById('categories');
-            categoriesDiv.innerHTML = '';
-            categories.forEach(category => {
-                const div = document.createElement('div');
-                div.className = 'category';
-                div.textContent = category.category_name;
-                div.onclick = () => loadServices(category.category_id);
-                categoriesDiv.appendChild(div);
-            });
-        }
-
-        async function loadServices(categoryId) {
-            try {
-                const response = await fetch(`${API_URL}${branchId}/categories/${categoryId}/services`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('categories').style.display = 'none';
-                    displayServices(data.services, data.category_name);
-                } else {
-                    showMessage(data.error || 'Erro ao carregar serviços.', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro ao conectar com o servidor.', 'error');
-                console.error(error);
-            }
-        }
-
-        function displayServices(services, categoryName) {
-            const servicesDiv = document.getElementById('services');
-            servicesDiv.innerHTML = `<h3>${categoryName}</h3>`;
-            services.forEach(service => {
-                const div = document.createElement('div');
-                div.className = 'service';
-                div.innerHTML = `
-                    ${service.service_name} 
-                    (Fila: ${service.active_tickets} | Espera: ${service.estimated_wait_time})
-                `;
-                div.onclick = () => generateTicket(service.service_id);
-                servicesDiv.appendChild(div);
-            });
-        }
-
-        async function generateTicket(serviceId) {
-            if (!confirm('Deseja gerar um ticket para este serviço?')) return;
-            try {
-                const response = await fetch(`${API_URL}${branchId}/services/${serviceId}/ticket`, {
-                    method: 'POST',
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
-                });
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `ticket_${serviceId}.pdf`;
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    showMessage('Ticket gerado com sucesso!', 'success');
-                } else {
-                    const data = await response.json();
-                    showMessage(data.error || 'Erro ao gerar ticket.', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro ao conectar com o servidor.', 'error');
-                console.error(error);
-            }
-        }
-
-        function showCategories() {
-            document.getElementById('categories').style.display = 'block';
-            document.getElementById('services').innerHTML = '';
-        }
-
-        async function loadQueues() {
-            try {
-                const response = await fetch(`${API_URL}${branchId}/display_queues`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    displayQueues(data.queues);
-                } else {
-                    showMessage(data.error || 'Erro ao carregar filas.', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro ao conectar com o servidor.', 'error');
-                console.error(error);
-            }
-        }
-
-        function displayQueues(queues) {
-            const queueList = document.getElementById('queueList');
-            queueList.innerHTML = '';
-            queues.forEach(queue => {
-                const div = document.createElement('div');
-                div.textContent = `${queue.service_name}: ${queue.current_ticket} (Espera: ${queue.estimated_wait_time})`;
-                queueList.appendChild(div);
-            });
-        }
-
-        function initializeSocket() {
-            socket = io(SOCKET_URL, {
-                transports: ['websocket'],
-                cors_allowed_origins: 'https://totemfacilita.netlify.app'
-            });
-
-            socket.on('connect', () => {
-                console.log('Conectado ao WebSocket');
-                socket.emit('join', { branch_id: branchId });
-            });
-
-            socket.on('ticket_issued', (data) => {
-                loadQueues();
-                showMessage(`Novo ticket emitido: ${data.ticket_number}`, 'success');
-            });
-
-            socket.on('disconnect', () => {
-                console.log('Desconectado do WebSocket');
-            });
-        }
-
-        function showMessage(message, type) {
-            const messageP = document.getElementById('message');
-            messageP.textContent = message;
-            messageP.className = type;
-            setTimeout(() => { messageP.textContent = ''; messageP.className = ''; }, 5000);
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="central.js"></script>
+    <script src="totem-auth-service.js"></script>
+    <script src="totem-login.js"></script>
 </body>
 </html>
