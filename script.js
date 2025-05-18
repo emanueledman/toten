@@ -3,24 +3,23 @@ const TOTEM_TOKEN = "h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF";
 
 let currentCategoryId = null;
 
-// Função para alternar telas
 function showScreen(screenId) {
     document.querySelectorAll(".screen").forEach(screen => screen.classList.add("hidden"));
     document.getElementById(screenId).classList.remove("hidden");
 }
 
-// Função de login
 async function login() {
     const branchId = document.getElementById("branch-id").value.trim();
     const errorElement = document.getElementById("login-error");
 
     if (!branchId) {
-        errorElement.textContent = "Por favor, digite o ID da filial.";
+        errorElement.textContent = "Digite o ID da filial.";
         return;
     }
 
     try {
         const response = await fetch(`${BASE_URL}/branches/${branchId}/services`, {
+            method: "GET",
             headers: { "Totem-Token": TOTEM_TOKEN }
         });
 
@@ -28,27 +27,28 @@ async function login() {
             localStorage.setItem("branchId", branchId);
             await loadCategories(branchId);
             showScreen("categories-screen");
+            errorElement.textContent = "";
         } else {
-            errorElement.textContent = "ID da filial inválido ou erro na conexão.";
+            const errorData = await response.json().catch(() => ({}));
+            errorElement.textContent = errorData.error || `Erro ${response.status}`;
         }
     } catch (error) {
-        errorElement.textContent = "Erro ao conectar com o servidor.";
-        console.error(error);
+        errorElement.textContent = "Erro de conexão (provavelmente CORS). Verifique o servidor.";
+        console.error("Erro:", error);
     }
 }
 
-// Carregar categorias
 async function loadCategories(branchId) {
+    const categoriesList = document.getElementById("categories-list");
     try {
         const response = await fetch(`${BASE_URL}/branches/${branchId}/services`, {
             headers: { "Totem-Token": TOTEM_TOKEN }
         });
+        if (!response.ok) throw new Error(`Erro ${response.status}`);
         const data = await response.json();
 
-        const categoriesList = document.getElementById("categories-list");
         categoriesList.innerHTML = "";
-
-        if (data.categories && data.categories.length > 0) {
+        if (data.categories?.length) {
             data.categories.forEach(category => {
                 const div = document.createElement("div");
                 div.className = "category-item";
@@ -57,27 +57,27 @@ async function loadCategories(branchId) {
                 categoriesList.appendChild(div);
             });
         } else {
-            categoriesList.textContent = "Nenhuma categoria disponível.";
+            categoriesList.textContent = "Sem categorias.";
         }
     } catch (error) {
-        console.error("Erro ao carregar categorias:", error);
+        categoriesList.textContent = "Erro ao carregar categorias.";
+        console.error(error);
     }
 }
 
-// Carregar serviços de uma categoria
 async function loadServices(branchId, categoryId, categoryName) {
     currentCategoryId = categoryId;
+    const servicesList = document.getElementById("services-list");
     try {
         const response = await fetch(`${BASE_URL}/branches/${branchId}/categories/${categoryId}/services`, {
             headers: { "Totem-Token": TOTEM_TOKEN }
         });
+        if (!response.ok) throw new Error(`Erro ${response.status}`);
         const data = await response.json();
 
         document.getElementById("category-title").textContent = `Serviços - ${categoryName}`;
-        const servicesList = document.getElementById("services-list");
         servicesList.innerHTML = "";
-
-        if (data.services && data.services.length > 0) {
+        if (data.services?.length) {
             data.services.forEach(service => {
                 const div = document.createElement("div");
                 div.className = "service-item";
@@ -86,15 +86,15 @@ async function loadServices(branchId, categoryId, categoryName) {
                 servicesList.appendChild(div);
             });
         } else {
-            servicesList.textContent = "Nenhum serviço disponível.";
+            servicesList.textContent = "Sem serviços.";
         }
         showScreen("services-screen");
     } catch (error) {
-        console.error("Erro ao carregar serviços:", error);
+        servicesList.textContent = "Erro ao carregar serviços.";
+        console.error(error);
     }
 }
 
-// Gerar senha
 async function generateTicket(branchId, serviceId) {
     try {
         const response = await fetch(`${BASE_URL}/branches/${branchId}/services/${serviceId}/ticket`, {
@@ -105,28 +105,23 @@ async function generateTicket(branchId, serviceId) {
         if (response.ok) {
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const ticketInfo = document.getElementById("ticket-info");
-            const ticketDownload = document.getElementById("ticket-download");
-
-            ticketInfo.textContent = "Sua senha foi gerada com sucesso!";
-            ticketDownload.href = url;
-            ticketDownload.download = `ticket_${new Date().getTime()}.pdf`;
+            document.getElementById("ticket-info").textContent = "Senha gerada com sucesso!";
+            document.getElementById("ticket-download").href = url;
+            document.getElementById("ticket-download").download = `ticket_${Date.now()}.pdf`;
             showScreen("ticket-screen");
         } else {
-            alert("Erro ao gerar senha. Tente novamente.");
+            alert(`Erro ao gerar senha: ${await response.text()}`);
         }
     } catch (error) {
-        console.error("Erro ao gerar senha:", error);
-        alert("Erro ao conectar com o servidor.");
+        alert("Erro de conexão ao gerar senha.");
+        console.error(error);
     }
 }
 
-// Voltar para categorias
 function backToCategories() {
     showScreen("categories-screen");
 }
 
-// Sair
 function logout() {
     localStorage.removeItem("branchId");
     document.getElementById("branch-id").value = "";
@@ -134,7 +129,6 @@ function logout() {
     showScreen("login-screen");
 }
 
-// Verificar login ao carregar a página
 window.onload = () => {
     const branchId = localStorage.getItem("branchId");
     if (branchId) {
