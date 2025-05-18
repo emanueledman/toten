@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
@@ -38,6 +37,266 @@
             font-family: 'Montserrat', sans-serif;
         }
 
+        /* Estilos da Página de Carregamento */
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--background-color), var(--primary-color));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+        }
+
+        .loading-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loading-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 0 auto 30px;
+        }
+
+        .conference-logo {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: var(--glass-effect);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px var(--shadow-color);
+            position: relative;
+        }
+
+        .conference-logo-inner {
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conference-logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            box-shadow: 0 3px 8px var(--shadow-color);
+            color: var(--text-dark);
+            transition: transform 0.3s ease;
+        }
+
+        .loading-title {
+            font-size: 34px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--text-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.8s;
+            text-shadow: 0 0 10px var(--shadow-color);
+        }
+
+        .loading-year {
+            font-size: 50px;
+            font-weight: bold;
+            margin-top: 5px;
+            background: linear-gradient(45deg, var(--secondary-color), var(--secondary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1s;
+            text-shadow: 0 0 10px var(--shadow-color);
+        }
+
+        .loading-subtitle {
+            font-style: italic;
+            font-size: 18px;
+            margin-top: 10px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1.2s;
+            color: var(--secondary-light);
+        }
+
+        .loading-loader {
+            width: 300px;
+            height: 10px;
+            background: var(--glass-effect);
+            border-radius: 10px;
+            margin: 30px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            opacity: 0.7;
+            letter-spacing: 3px;
+            animation: pulse 1.5s infinite;
+            color: var(--text-light);
+        }
+
+        .loading-percentage {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 10px;
+            opacity: 0.9;
+            color: var(--secondary-light);
+        }
+
+        .loading-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .loading-particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        .loading-burst-particle {
+            position: absolute;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            border-radius: 50%;
+            opacity: 0;
+            animation: burst 1s ease forwards;
+        }
+
+        .loading-ripple {
+            position: absolute;
+            border: 3px solid var(--glass-effect);
+            border-radius: 50%;
+            animation: ripple 4s linear infinite;
+            opacity: 0;
+        }
+
+        .loading-shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        .loading-main-content {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.5s;
+        }
+
+        .loading-welcome-text {
+            font-size: 28px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--text-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px var(--shadow-color);
+        }
+
+        .no-animations * {
+            animation: none !important;
+        }
+
+        @keyframes loading {
+            0% { width: 0; }
+            50% { width: 100%; }
+            100% { width: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        @keyframes ripple {
+            0% { width: 0; height: 0; opacity: 0.8; }
+            100% { width: 600px; height: 600px; opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes burst {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        @media (max-width: 768px) {
+            .loading-title { font-size: 26px; }
+            .loading-year { font-size: 38px; }
+            .loading-subtitle { font-size: 16px; }
+            .loading-welcome-text { font-size: 22px; }
+            .loading-logo { flex-direction: column; gap: 10px; }
+            .conference-logo { width: 160px; height: 160px; }
+            .conference-logo-inner { width: 130px; height: 130px; }
+            .loading-loader { width: 220px; }
+            .logo-icon { width: 50px; height: 50px; font-size: 26px; }
+        }
+
+        /* Estilos do Totem */
         body {
             background-color: var(--background-color);
             color: var(--text-light);
@@ -50,7 +309,7 @@
         .container {
             width: 100vw;
             height: 100vh;
-            display: flex;
+            display: none; /* Inicialmente escondido até o carregamento terminar */
             flex-direction: column;
             padding: 0;
             position: relative;
@@ -69,7 +328,7 @@
         }
 
         .header {
-            background: linear-gradient(to right, var(--gradient-start), --gradient-end);
+            background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
@@ -98,26 +357,6 @@
         .conservatory-logo {
             display: flex;
             align-items: center;
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background-color: var(--secondary-color);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 700;
-            margin-right: 15px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-            color: var(--text-dark);
-            transition: transform 0.3s ease;
-        }
-
-        .logo-icon:hover {
-            transform: rotate(360deg);
         }
 
         .conservatory-name {
@@ -492,53 +731,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(30deg); }
-            100% { transform: translateX(100%) rotate(30deg); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-
-        .btn:focus, .category-card:focus, .service-card:focus {
-            outline: 2px solid var(--secondary-color);
-            outline-offset: 2px;
-        }
-
-        .high-contrast .category-card,
-        .high-contrast .service-card,
-        .high-contrast .confirmation-container,
-        .high-contrast .ticket-card {
-            background-color: #000;
-            color: #fff;
-            border: 2px solid #fff;
-        }
-
-        .high-contrast .btn-primary {
-            background: #fff;
-            color: #000;
-        }
-
-        .high-contrast .btn-secondary {
-            background: #000;
-            color: #fff;
-            border: 1px solid #fff;
-        }
-
         @media screen and (max-width: 1200px) {
             .category-container, .service-list {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -583,10 +775,83 @@
                 font-size: 48px;
             }
         }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .btn:focus, .category-card:focus, .service-card:focus {
+            outline: 2px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        .high-contrast .category-card,
+        .high-contrast .service-card,
+        .high-contrast .confirmation-container,
+        .high-contrast .ticket-card {
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+
+        .high-contrast .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .high-contrast .btn-secondary {
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Página de Carregamento -->
+    <div class="loading-container" role="region" aria-label="Tela de carregamento">
+        <button class="accessibility-btn" onclick="document.body.classList.toggle('no-animations')" title="Pausar Animações" aria-label="Pausar animações" style="position: fixed; top: 10px; right: 10px;">
+            <i class="fas fa-pause"></i>
+        </button>
+        <div class="loading-particles" id="loading-particles"></div>
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="conference-logo">
+                    <div class="conference-logo-inner">
+                        <img src="https://uniluanda.ao/wp-content/uploads/2024/01/LOGOTIPO-ID-2a-CONFERENCIA-1.png" alt="Logo da II Conferência Científica" class="conference-logo-image">
+                        <div class="loading-shine"></div>
+                    </div>
+                    <div class="loading-ripple"></div>
+                    <div class="loading-ripple" style="animation-delay: 1s;"></div>
+                    <div class="loading-ripple" style="animation-delay: 2s;"></div>
+                </div>
+                <div class="logo-icon">CL</div>
+            </div>
+            <h1 class="loading-title">III Conferência Científica</h1>
+            <div class="loading-year">2025</div>
+            <div class="loading-subtitle">Inovação e Conhecimento</div>
+            <div class="loading-loader">
+                <div class="loading-loader-bar" id="loading-loader-bar"></div>
+            </div>
+            <div class="loading-text">CARREGANDO</div>
+            <div class="loading-percentage" id="loading-percentage">0%</div>
+        </div>
+        <div class="loading-main-content">
+            <h1 class="loading-welcome-text">Bem-vindo à Experiência da Inovação</h1>
+            <p style="font-size: 18px; margin-bottom: 20px; color: var(--secondary-light);">
+                Preparando o Totem de Autoatendimento...
+            </p>
+        </div>
+    </div>
+
+    <!-- Interface do Totem -->
+    <div class="container" role="main">
         <div class="header" role="banner">
             <div class="conservatory-info">
                 <div class="conservatory-logo">
@@ -635,7 +900,7 @@
                         <!-- Preenchido dinamicamente via JavaScript -->
                     </div>
                     <div class="buttons-container">
-                        <button class="btn btn-secondary" onclick="showCategories()">
+                        <button class="btn btn-secondary" onclick="showServices(currentCategory)">
                             <i class="fas fa-arrow-left"></i> Voltar
                         </button>
                         <button class="btn btn-secondary" onclick="restart()">
@@ -728,23 +993,84 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
     <script>
-        // Configurações
+        // Script da Página de Carregamento
+        const loadingParticlesContainer = document.getElementById('loading-particles');
+        const particleCount = 30;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'loading-particle';
+            const size = Math.random() * 5 + 2;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.opacity = Math.random() * 0.5 + 0.3;
+            const duration = Math.random() * 20 + 10;
+            particle.style.animationDuration = `${duration}s`;
+            const delay = Math.random() * 10;
+            particle.style.animationDelay = `${delay}s`;
+            loadingParticlesContainer.appendChild(particle);
+        }
+
+        function createBurst() {
+            for (let i = 0; i < 20; i++) {
+                const burst = document.createElement('div');
+                burst.className = 'loading-burst-particle';
+                burst.style.width = '10px';
+                burst.style.height = '10px';
+                burst.style.left = `50%`;
+                burst.style.top = `50%`;
+                burst.style.transform = `translate(-50%, -50%)`;
+                burst.style.animationDelay = `${Math.random() * 0.5}s`;
+                const angle = Math.random() * 360;
+                const distance = Math.random() * 200 + 50;
+                burst.style.setProperty('--burst-x', `${Math.cos(angle) * distance}px`);
+                burst.style.setProperty('--burst-y', `${Math.sin(angle) * distance}px`);
+                loadingParticlesContainer.appendChild(burst);
+                setTimeout(() => burst.remove(), 1000);
+            }
+        }
+
+        const percentageElement = document.getElementById('loading-percentage');
+        const loaderBar = document.getElementById('loading-loader-bar');
+        let progress = 0;
+
+        const loadingInterval = setInterval(() => {
+            if (progress >= 100) {
+                clearInterval(loadingInterval);
+                createBurst();
+                new Audio('https://example.com/chime.mp3').play().catch(() => {});
+                setTimeout(() => {
+                    document.querySelector('.loading-container').style.display = 'none';
+                    document.querySelector('.loading-main-content').style.display = 'block';
+                    setTimeout(() => {
+                        document.querySelector('.loading-container').style.display = 'none';
+                        document.querySelector('.container').style.display = 'flex';
+                    }, 2000);
+                }, 1000);
+                return;
+            }
+
+            progress = Math.min(progress + 3.33, 100); // Progresso linear para 3s
+            percentageElement.textContent = `${Math.round(progress)}%`;
+            loaderBar.style.width = `${progress}%`;
+        }, 100);
+
+        // Script do Totem
         const API_BASE_URL = 'https://fila-facilita2-0-4uzw.onrender.com/api/totem';
         const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
         const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb';
 
-        // Estado
         let currentCategory = '';
         let currentService = '';
         let isBranchOpen = false;
         let categoriesData = [];
         let queuesData = [];
 
-        // Ícones genéricos para categorias (caso a API não forneça)
         const defaultIcons = ['fa-file-alt', 'fa-home', 'fa-building', 'fa-pen', 'fa-folder', 'fa-cog'];
         const defaultColors = ['#1d3557', '#457b9d', '#f4a261', '#2a9d8f', '#6b7280', '#9ca3af'];
 
-        // Funções utilitárias
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -775,7 +1101,6 @@
             loadingScreen.classList.toggle('active', show);
         }
 
-        // Carregar categorias da API
         async function loadCategories() {
             showLoading(true, 'Carregando serviços...');
             try {
@@ -796,7 +1121,6 @@
             }
         }
 
-        // Atualizar tela de categorias dinamicamente
         function updateCategoriesScreen(error = false) {
             const categoryContainer = document.getElementById('category-container');
             categoryContainer.innerHTML = '';
@@ -826,7 +1150,6 @@
             });
         }
 
-        // Carregar serviços por categoria
         function showServices(categoryId) {
             currentCategory = categoryId;
             const categoryData = categoriesData.find(cat => cat.category_id === categoryId);
@@ -859,7 +1182,6 @@
             showScreen('services-screen');
         }
 
-        // Mostrar tela de confirmação
         function showConfirmation(categoryId, serviceId, serviceName, serviceData) {
             currentCategory = categoryId;
             currentService = serviceId;
@@ -874,7 +1196,6 @@
             showScreen('confirmation-screen');
         }
 
-        // Gerar ticket
         async function generateTicket() {
             if (!isBranchOpen) {
                 showMessage('Não é possível gerar tickets: filial fechada.', 'error');
@@ -893,7 +1214,6 @@
                     }
                 );
 
-                // Baixar PDF
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
                 link.href = url;
@@ -902,7 +1222,6 @@
                 link.click();
                 document.body.removeChild(link);
 
-                // Mock para tela de ticket (backend não retorna ticket_number)
                 const now = new Date();
                 const ticketDate = `${now.toLocaleDateString('pt-PT')} - ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
                 const ticketNumber = `X${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
@@ -923,7 +1242,6 @@
             }
         }
 
-        // Carregar filas ativas
         async function loadQueues() {
             try {
                 const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/display_queues`, {
@@ -936,13 +1254,11 @@
             }
         }
 
-        // Polling para filas
         function startQueuePolling() {
             loadQueues();
             setInterval(loadQueues, 30000);
         }
 
-        // Funções de acessibilidade
         function toggleHighContrast() {
             document.body.classList.toggle('high-contrast');
         }
@@ -960,7 +1276,6 @@
             showMessage('Para assistência, entre em contato com o suporte no local ou ligue para +244 222 123 456.', 'error');
         }
 
-        // Reiniciar fluxo
         function showCategories() {
             currentCategory = '';
             showScreen('categories-screen');
@@ -972,7 +1287,6 @@
             showScreen('categories-screen');
         }
 
-        // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
             loadCategories();
             startQueuePolling();
