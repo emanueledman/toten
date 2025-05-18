@@ -72,12 +72,13 @@
             if (loading) {
                 loading.classList.toggle('hidden', !show);
                 if (show) {
-                    setTimeout(() => loading.classList.add('hidden'), 3000);
+                    setTimeout(() => loading.classList.add('hidden'), 2000);
                 }
             }
         }
 
         function showMessage(message, type = 'success') {
+            console.log(`Mensagem: ${message} (${type})`);
             const toast = document.getElementById('toast');
             toast.innerHTML = `<div class="p-3 rounded-lg shadow-lg ${
                 type === 'success' ? 'bg-green-100 text-green-800' :
@@ -110,7 +111,12 @@
         async function login(branchId, password) {
             showLoading(true);
             try {
-                const response = await axios.post(`${API_BASE}/api/totem/login`, { branch_id: branchId, password });
+                console.log('Enviando login:', { branch_id: branchId });
+                const response = await axios.post(`${API_BASE}/api/totem/login`, { branch_id: branchId, password }, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 10000
+                });
+                console.log('Resposta login:', response.data);
                 const { success, branch_id, branch_name } = response.data;
                 if (success) {
                     setBranchInfo(branch_id, branch_name);
@@ -118,6 +124,7 @@
                 }
                 return { success: false, message: 'Credenciais inválidas' };
             } catch (error) {
+                console.error('Erro no login:', error.response?.data || error.message);
                 return { success: false, message: error.response?.data?.error || 'Erro ao fazer login' };
             } finally {
                 showLoading(false);
@@ -128,22 +135,25 @@
             showLoading(true);
             try {
                 const { branchId } = getBranchInfo();
+                console.log(`Carregando serviços para branchId: ${branchId}`);
                 const response = await axios.get(`${API_BASE}/api/totem/branches/${branchId}/services`, {
-                    headers: { 'Totem-Token': TOKEN }
+                    headers: { 'Totem-Token': TOKEN },
+                    timeout: 10000
                 });
-                const { categories } = response.data;
+                console.log('Resposta serviços:', response.data);
                 const services = document.getElementById('services');
                 services.innerHTML = '';
 
-                if (categories?.length) {
+                const categories = response.data.categories || [];
+                if (categories.length) {
                     categories.forEach(category => {
                         const div = document.createElement('div');
                         div.className = 'mb-4';
-                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name}</h3>`;
-                        category.services.forEach(service => {
+                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name || 'Sem nome'}</h3>`;
+                        (category.services || []).forEach(service => {
                             const button = document.createElement('button');
                             button.className = 'w-full bg-indigo-500 text-white py-2 px-3 rounded-md hover:bg-indigo-600 mb-2 text-left';
-                            button.textContent = `${service.service_name} (Espera: ${service.estimated_wait_time})`;
+                            button.textContent = `${service.service_name || 'Serviço'} (Espera: ${service.estimated_wait_time || 'N/A'})`;
                             button.onclick = () => generateTicket(branchId, service.service_id);
                             div.appendChild(button);
                         });
@@ -151,8 +161,10 @@
                     });
                 } else {
                     services.innerHTML = '<p class="text-gray-600">Nenhum serviço disponível.</p>';
+                    showMessage('Nenhum serviço encontrado', 'info');
                 }
             } catch (error) {
+                console.error('Erro ao carregar serviços:', error.response?.data || error.message);
                 showMessage('Erro ao carregar serviços', 'error');
             } finally {
                 showLoading(false);
@@ -162,11 +174,13 @@
         async function generateTicket(branchId, serviceId) {
             showLoading(true);
             try {
+                console.log(`Gerando ticket para branchId: ${branchId}, serviceId: ${serviceId}`);
                 const response = await axios.post(
                     `${API_BASE}/api/totem/branches/${branchId}/services/${serviceId}/ticket`,
                     {},
-                    { headers: { 'Totem-Token': TOKEN }, responseType: 'blob' }
+                    { headers: { 'Totem-Token': TOKEN }, responseType: 'blob', timeout: 10000 }
                 );
+                console.log('Resposta ticket:', response.headers['content-type']);
                 if (response.headers['content-type'] !== 'application/pdf') {
                     throw new Error('Não é um PDF');
                 }
@@ -181,6 +195,7 @@
                 window.URL.revokeObjectURL(url);
                 showMessage('Ticket gerado!', 'success');
             } catch (error) {
+                console.error('Erro ao gerar ticket:', error.response?.data || error.message);
                 showMessage('Erro ao gerar ticket', 'error');
             } finally {
                 showLoading(false);
