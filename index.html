@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Login</title>
+    <title>Login do Totem</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #loading-overlay {
+        #loading {
             position: fixed;
             top: 0;
             left: 0;
@@ -18,32 +18,34 @@
             align-items: center;
             color: white;
             z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">Totem Login</h1>
-        <form id="totem-login-form" class="space-y-4">
+    <div id="loading" class="hidden">Carregando...</div>
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+        <h1 class="text-xl font-bold mb-4 text-center">Login do Totem</h1>
+        <form id="login-form" class="space-y-4">
             <div>
-                <label for="branch-id" class="block text-sm font-medium text-gray-700">Branch ID</label>
-                <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Branch ID" required>
+                <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
+                <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Senha" required>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Senha" required>
             </div>
-            <div class="flex items-center">
-                <input type="checkbox" id="remember-me" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                <label for="remember-me" class="ml-2 block text-sm text-gray-900">Lembrar-me</label>
-            </div>
-            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Entrar</button>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="central.js"></script>
-    <script src="totem-auth-service.js"></script>
-    <script src="totem-login.js"></script>
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+    <script src="login.js"></script>
 </body>
 </html>
