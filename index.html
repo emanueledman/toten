@@ -43,7 +43,7 @@
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
-                    <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
+                    <input type="text" id="branch-id" value="d0b19c4d-a9e4-46cf-a81a-714eab48ebbb" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
@@ -65,7 +65,7 @@
     </div>
     <script>
         const API_BASE = 'https://fila-facilita2-0-4uzw.onrender.com';
-        const TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        const FIXED_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
 
         function showLoading(show = true) {
             const loading = document.getElementById('loading');
@@ -87,21 +87,24 @@
             setTimeout(() => toast.innerHTML = '', 3000);
         }
 
-        function setBranchInfo(branchId, branchName) {
+        function setBranchInfo(branchId, branchName, token = null) {
             localStorage.setItem('branchId', branchId);
             localStorage.setItem('branchName', branchName);
+            if (token) localStorage.setItem('authToken', token);
         }
 
         function getBranchInfo() {
             return {
                 branchId: localStorage.getItem('branchId'),
-                branchName: localStorage.getItem('branchName')
+                branchName: localStorage.getItem('branchName'),
+                token: localStorage.getItem('authToken') || FIXED_TOKEN
             };
         }
 
         function clearBranchInfo() {
             localStorage.removeItem('branchId');
             localStorage.removeItem('branchName');
+            localStorage.removeItem('authToken');
         }
 
         function isAuthenticated() {
@@ -117,9 +120,9 @@
                     timeout: 10000
                 });
                 console.log('Resposta login:', response.data);
-                const { success, branch_id, branch_name } = response.data;
+                const { success, branch_id, branch_name, token } = response.data;
                 if (success) {
-                    setBranchInfo(branch_id, branch_name);
+                    setBranchInfo(branch_id, branch_name, token);
                     return { success: true };
                 }
                 return { success: false, message: 'Credenciais inválidas' };
@@ -134,22 +137,28 @@
         async function loadServices() {
             showLoading(true);
             try {
-                const { branchId } = getBranchInfo();
-                console.log(`Carregando serviços para branchId: ${branchId}`);
+                const { branchId, token } = getBranchInfo();
+                console.log(`Carregando serviços para branchId: ${branchId}, token: ${token}`);
+                const headers = {
+                    'Totem-Token': token,
+                    'totem-token': token // Fallback para case sensitivity
+                };
+                console.log('Headers enviados:', headers);
                 const response = await axios.get(`${API_BASE}/api/totem/branches/${branchId}/services`, {
-                    headers: { 'Totem-Token': TOKEN },
+                    headers,
                     timeout: 10000
                 });
-                console.log('Resposta serviços:', response.data);
+                console.log('Resposta serviços:', JSON.stringify(response.data, null, 2));
                 const services = document.getElementById('services');
                 services.innerHTML = '';
 
-                const categories = response.data.categories || [];
-                if (categories.length) {
+                const data = response.data;
+                const categories = data.categories || data || [];
+                if (Array.isArray(categories) && categories.length) {
                     categories.forEach(category => {
                         const div = document.createElement('div');
                         div.className = 'mb-4';
-                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name || 'Sem nome'}</h3>`;
+                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name || 'Categoria'}</h3>`;
                         (category.services || []).forEach(service => {
                             const button = document.createElement('button');
                             button.className = 'w-full bg-indigo-500 text-white py-2 px-3 rounded-md hover:bg-indigo-600 mb-2 text-left';
@@ -165,7 +174,7 @@
                 }
             } catch (error) {
                 console.error('Erro ao carregar serviços:', error.response?.data || error.message);
-                showMessage('Erro ao carregar serviços', 'error');
+                showMessage(`Erro ao carregar serviços: ${error.response?.data?.error || error.message}`, 'error');
             } finally {
                 showLoading(false);
             }
@@ -174,11 +183,12 @@
         async function generateTicket(branchId, serviceId) {
             showLoading(true);
             try {
-                console.log(`Gerando ticket para branchId: ${branchId}, serviceId: ${serviceId}`);
+                const { token } = getBranchInfo();
+                console.log(`Gerando ticket para branchId: ${branchId}, serviceId: ${serviceId}, token: ${token}`);
                 const response = await axios.post(
                     `${API_BASE}/api/totem/branches/${branchId}/services/${serviceId}/ticket`,
                     {},
-                    { headers: { 'Totem-Token': TOKEN }, responseType: 'blob', timeout: 10000 }
+                    { headers: { 'Totem-Token': token, 'totem-token': token }, responseType: 'blob', timeout: 10000 }
                 );
                 console.log('Resposta ticket:', response.headers['content-type']);
                 if (response.headers['content-type'] !== 'application/pdf') {
@@ -196,7 +206,7 @@
                 showMessage('Ticket gerado!', 'success');
             } catch (error) {
                 console.error('Erro ao gerar ticket:', error.response?.data || error.message);
-                showMessage('Erro ao gerar ticket', 'error');
+                showMessage(`Erro ao gerar ticket: ${error.response?.data?.error || error.message}`, 'error');
             } finally {
                 showLoading(false);
             }
