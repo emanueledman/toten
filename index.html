@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login do Totem</title>
+    <title>Totem</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         #loading {
             position: fixed;
@@ -25,27 +26,206 @@
             opacity: 0;
             pointer-events: none;
         }
+        #toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100">
     <div id="loading" class="hidden">Carregando...</div>
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-        <h1 class="text-xl font-bold mb-4 text-center">Login do Totem</h1>
-        <form id="login-form" class="space-y-4">
-            <div>
-                <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
-                <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
-            </div>
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Senha" required>
-            </div>
-            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Entrar</button>
-        </form>
+    <div id="toast"></div>
+    <div id="login" class="flex items-center justify-center h-screen">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h1 class="text-xl font-bold mb-4 text-center">Login do Totem</h1>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
+                    <input type="text" id="branch-id" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Senha" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Entrar</button>
+            </form>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="auth.js"></script>
-    <script src="login.js"></script>
+    <div id="dashboard" class="hidden">
+        <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Totem - <span id="branch-name"></span></h1>
+            <button id="logout" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md">Sair</button>
+        </header>
+        <main class="p-6">
+            <h2 class="text-lg font-semibold mb-4">Serviços Disponíveis</h2>
+            <div id="services" class="grid grid-cols-1 gap-4"></div>
+        </main>
+    </div>
+    <script>
+        const API_BASE = 'https://fila-facilita2-0-4uzw.onrender.com';
+        const TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+
+        function showLoading(show = true) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.toggle('hidden', !show);
+                if (show) {
+                    setTimeout(() => loading.classList.add('hidden'), 3000);
+                }
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<div class="p-3 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-100 text-green-800' :
+                type === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+            }">${message}</div>`;
+            setTimeout(() => toast.innerHTML = '', 3000);
+        }
+
+        function setBranchInfo(branchId, branchName) {
+            localStorage.setItem('branchId', branchId);
+            localStorage.setItem('branchName', branchName);
+        }
+
+        function getBranchInfo() {
+            return {
+                branchId: localStorage.getItem('branchId'),
+                branchName: localStorage.getItem('branchName')
+            };
+        }
+
+        function clearBranchInfo() {
+            localStorage.removeItem('branchId');
+            localStorage.removeItem('branchName');
+        }
+
+        function isAuthenticated() {
+            return !!getBranchInfo().branchId;
+        }
+
+        async function login(branchId, password) {
+            showLoading(true);
+            try {
+                const response = await axios.post(`${API_BASE}/api/totem/login`, { branch_id: branchId, password });
+                const { success, branch_id, branch_name } = response.data;
+                if (success) {
+                    setBranchInfo(branch_id, branch_name);
+                    return { success: true };
+                }
+                return { success: false, message: 'Credenciais inválidas' };
+            } catch (error) {
+                return { success: false, message: error.response?.data?.error || 'Erro ao fazer login' };
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadServices() {
+            showLoading(true);
+            try {
+                const { branchId } = getBranchInfo();
+                const response = await axios.get(`${API_BASE}/api/totem/branches/${branchId}/services`, {
+                    headers: { 'Totem-Token': TOKEN }
+                });
+                const { categories } = response.data;
+                const services = document.getElementById('services');
+                services.innerHTML = '';
+
+                if (categories?.length) {
+                    categories.forEach(category => {
+                        const div = document.createElement('div');
+                        div.className = 'mb-4';
+                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name}</h3>`;
+                        category.services.forEach(service => {
+                            const button = document.createElement('button');
+                            button.className = 'w-full bg-indigo-500 text-white py-2 px-3 rounded-md hover:bg-indigo-600 mb-2 text-left';
+                            button.textContent = `${service.service_name} (Espera: ${service.estimated_wait_time})`;
+                            button.onclick = () => generateTicket(branchId, service.service_id);
+                            div.appendChild(button);
+                        });
+                        services.appendChild(div);
+                    });
+                } else {
+                    services.innerHTML = '<p class="text-gray-600">Nenhum serviço disponível.</p>';
+                }
+            } catch (error) {
+                showMessage('Erro ao carregar serviços', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function generateTicket(branchId, serviceId) {
+            showLoading(true);
+            try {
+                const response = await axios.post(
+                    `${API_BASE}/api/totem/branches/${branchId}/services/${serviceId}/ticket`,
+                    {},
+                    { headers: { 'Totem-Token': TOKEN }, responseType: 'blob' }
+                );
+                if (response.headers['content-type'] !== 'application/pdf') {
+                    throw new Error('Não é um PDF');
+                }
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ticket_${serviceId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                showMessage('Ticket gerado!', 'success');
+            } catch (error) {
+                showMessage('Erro ao gerar ticket', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginDiv = document.getElementById('login');
+            const dashboardDiv = document.getElementById('dashboard');
+            const loginForm = document.getElementById('login-form');
+            const logoutBtn = document.getElementById('logout');
+
+            if (isAuthenticated()) {
+                loginDiv.classList.add('hidden');
+                dashboardDiv.classList.remove('hidden');
+                const { branchName } = getBranchInfo();
+                document.getElementById('branch-name').textContent = branchName;
+                loadServices();
+            }
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const branchId = document.getElementById('branch-id').value;
+                const password = document.getElementById('password').value;
+                const result = await login(branchId, password);
+                if (result.success) {
+                    document.getElementById('password').value = '';
+                    showMessage('Login bem-sucedido!', 'success');
+                    loginDiv.classList.add('hidden');
+                    dashboardDiv.classList.remove('hidden');
+                    const { branchName } = getBranchInfo();
+                    document.getElementById('branch-name').textContent = branchName;
+                    loadServices();
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                clearBranchInfo();
+                loginDiv.classList.remove('hidden');
+                dashboardDiv.classList.add('hidden');
+                showMessage('Sessão encerrada', 'success');
+            });
+        });
+    </script>
 </body>
 </html>
