@@ -15,18 +15,23 @@
         body {
             background-color: #f1f5f9;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 900px;
+            width: 100%;
         }
         .header {
             text-align: center;
             margin-bottom: 20px;
         }
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             color: #1e40af;
+            font-weight: bold;
         }
         .status {
             background-color: white;
@@ -34,31 +39,81 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            text-align: center;
         }
         .status p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #374151;
         }
         .status .closed {
             color: #dc2626;
+            font-weight: bold;
         }
         .status .open {
             color: #15803d;
+            font-weight: bold;
+        }
+        .services {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .category {
+            margin-bottom: 20px;
+        }
+        .category h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #1e40af;
+            font-weight: bold;
+        }
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .service-item {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            background-color: #f9fafb;
+        }
+        .service-item:hover:not(.disabled) {
+            background-color: #dbeafe;
+            transform: scale(1.02);
+        }
+        .service-item.disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .service-item h3 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .service-item p {
+            font-size: 1rem;
+            color: #4b5563;
         }
         .queues {
-            background-color: #dbeafe;
+            background-color: #eff6ff;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
         }
         .queues h2 {
             font-size: 1.5rem;
             margin-bottom: 10px;
+            color: #1e40af;
         }
         .queue-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 10px;
         }
         .queue-item {
@@ -67,39 +122,17 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .services {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .category {
-            margin-bottom: 20px;
-        }
-        .category h2 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: #1e40af;
-        }
-        .service-item {
-            padding: 15px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .service-item:hover:not(.disabled) {
-            background-color: #eff6ff;
-        }
-        .service-item.disabled {
-            background-color: #e5e7eb;
-            cursor: not-allowed;
+        .queue-item h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         .message {
             margin: 10px 0;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
         }
         .message.error {
             background-color: #fee2e2;
@@ -112,6 +145,7 @@
         .loading {
             text-align: center;
             padding: 20px;
+            font-size: 1.2rem;
             color: #1e40af;
         }
     </style>
@@ -124,27 +158,23 @@
         <div class="status" id="branch-status">
             <p>Carregando status...</p>
         </div>
-        <div class="queues" id="queues">
-            <h2>Filas Ativas</h2>
-            <div class="queue-grid" id="queue-grid"></div>
-        </div>
         <div class="services" id="services">
             <div id="message"></div>
-            <div id="loading" class="loading" style="display: none;">Carregando...</div>
+            <div id="loading" class="loading" style="display: none;">Carregando serviços...</div>
             <div id="categories"></div>
+        </div>
+        <div class="queues" id="queues">
+            <h2>Filas Ativas</h2>
+            <div id="queue-loading" class="loading" style="display: none;">Carregando filas...</div>
+            <div id="queue-grid"></div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
     <script>
-        const API_BASE_URL = 'https://fila-facilita2-0-4uzw.onrender.com/api/totem';
+        const API_BASE_URL = 'http://localhost:5000/api/totem';
         const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
-        const SOCKET_URL = 'https://fila-facilita2-0-4uzw.onrender.com';
-        const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb'; // Ajuste conforme necessário
-
-        // Configuração do WebSocket
-        const socket = io(SOCKET_URL, { transports: ['websocket'] });
+        const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb';
 
         // Estado
         let isBranchOpen = false;
@@ -156,15 +186,21 @@
             setTimeout(() => messageDiv.innerHTML = '', 5000);
         }
 
-        function showLoading(show) {
+        function showServiceLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
 
-        // Carregar status da filial
-        async function loadBranchStatus() {
+        function showQueueLoading(show) {
+            document.getElementById('queue-loading').style.display = show ? 'block' : 'none';
+        }
+
+        // Carregar status da filial e serviços
+        async function loadBranchStatusAndServices() {
+            showServiceLoading(true);
             try {
                 const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/services`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                    headers: { 'Totem-Token': TOTEM_TOKEN },
+                    timeout: 10000,
                 });
                 const status = response.data.branch_status;
                 isBranchOpen = status.is_open;
@@ -175,8 +211,13 @@
                     <p>${status.message}</p>
                 `;
                 loadServices(response.data.categories);
+                showMessage(response.data.message, 'success');
             } catch (error) {
-                showMessage(error.response?.data?.error || 'Erro ao carregar status da filial', 'error');
+                const errorMessage = error.response?.data?.error || 'Erro ao carregar serviços. Tente novamente.';
+                showMessage(errorMessage, 'error');
+                document.getElementById('categories').innerHTML = '<p>Nenhum serviço disponível no momento.</p>';
+            } finally {
+                showServiceLoading(false);
             }
         }
 
@@ -190,22 +231,26 @@
             categoriesDiv.innerHTML = categories.map(category => `
                 <div class="category">
                     <h2>${category.category_name}</h2>
-                    ${category.services.map(service => `
-                        <div class="service-item ${!isBranchOpen ? 'disabled' : ''}"
-                             onclick="generateTicket('${service.service_id}', '${service.service_name}')">
-                            <h3>${service.service_name}</h3>
-                            <p>Fila: ${service.active_tickets} pessoas | Tempo estimado: ${service.estimated_wait_time}</p>
-                        </div>
-                    `).join('')}
+                    <div class="service-grid">
+                        ${category.services.map(service => `
+                            <div class="service-item ${!isBranchOpen ? 'disabled' : ''}"
+                                 onclick="generateTicket('${service.service_id}', '${service.service_name}')">
+                                <h3>${service.service_name}</h3>
+                                <p>Fila: ${service.active_tickets} pessoas | Tempo estimado: ${service.estimated_wait_time}</p>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `).join('');
         }
 
         // Carregar filas ativas
         async function loadQueues() {
+            showQueueLoading(true);
             try {
                 const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/display_queues`, {
-                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                    headers: { 'Totem-Token': TOTEM_TOKEN },
+                    timeout: 10000,
                 });
                 const queueGrid = document.getElementById('queue-grid');
                 if (!response.data.queues || response.data.queues.length === 0) {
@@ -221,7 +266,11 @@
                     </div>
                 `).join('');
             } catch (error) {
-                showMessage(error.response?.data?.error || 'Erro ao carregar filas', 'error');
+                const errorMessage = error.response?.data?.error || 'Erro ao carregar filas. Tente novamente.';
+                showMessage(errorMessage, 'error');
+                document.getElementById('queue-grid').innerHTML = '<p>Nenhuma fila ativa no momento.</p>';
+            } finally {
+                showQueueLoading(false);
             }
         }
 
@@ -231,14 +280,15 @@
                 showMessage('Não é possível gerar tickets: filial fechada.', 'error');
                 return;
             }
-            showLoading(true);
+            showServiceLoading(true);
             try {
                 const response = await axios.post(
                     `${API_BASE_URL}/branches/${BRANCH_ID}/services/${serviceId}/ticket`,
                     {},
                     {
                         headers: { 'Totem-Token': TOTEM_TOKEN },
-                        responseType: 'blob'
+                        responseType: 'blob',
+                        timeout: 15000,
                     }
                 );
                 const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -249,28 +299,25 @@
                 link.click();
                 document.body.removeChild(link);
                 showMessage('Ticket gerado com sucesso!', 'success');
-                loadQueues(); // Atualizar filas
+                loadQueues();
             } catch (error) {
-                showMessage(error.response?.data?.error || 'Erro ao gerar ticket', 'error');
+                const errorMessage = error.response?.data?.error || 'Erro ao gerar ticket. Tente novamente.';
+                showMessage(errorMessage, 'error');
             } finally {
-                showLoading(false);
+                showServiceLoading(false);
             }
         }
 
-        // Configurar WebSocket para atualizações
-        socket.on('connect', () => console.log('Conectado ao WebSocket'));
-        socket.on('ticket_issued', (data) => {
-            if (data.branch_id === BRANCH_ID) {
-                loadQueues(); // Atualizar filas quando um ticket é emitido
-                showMessage(`Nova senha emitida: ${data.ticket_number}`, 'success');
-            }
-        });
-        socket.on('disconnect', () => console.log('Desconectado do WebSocket'));
+        // Polling para atualizar filas
+        function startQueuePolling() {
+            loadQueues();
+            setInterval(loadQueues, 30000); // Atualiza a cada 30 segundos
+        }
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            loadBranchStatus();
-            loadQueues();
+            loadBranchStatusAndServices();
+            startQueuePolling();
         });
     </script>
 </body>
