@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,10 +19,12 @@
             color: white;
             z-index: 9999;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
-    
     <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
         <h1 class="text-xl font-bold">Totem Dashboard - <span id="branch-name">Carregando...</span></h1>
         <button id="logout" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md">Sair</button>
@@ -36,16 +38,16 @@
             Nenhum serviço disponível no momento.
         </div>
     </main>
+    <div id="loading-overlay" class="hidden">Carregando...</div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="central.js"></script>
-    <script src="totem-auth-service.js"></script>
+    <script src="totem-auth.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             console.info("Inicializando página do totem...");
 
-            // Verificar autenticação
+            // Verificar configuração
             if (!totemAuthService.checkAuthAndRedirect()) {
-                console.warn("Verificação de autenticação falhou");
+                console.warn("Verificação de configuração falhou");
                 return;
             }
 
@@ -58,7 +60,8 @@
                 console.debug("Botão de logout encontrado, configurando handler");
                 logoutBtn.addEventListener('click', () => {
                     console.info("Logout do totem iniciado pelo usuário");
-                    totemAuthService.logout();
+                    totemAuthService.clearConfigData();
+                    window.location.href = '/totem-config.html';
                 });
             }
 
@@ -73,7 +76,7 @@
             try {
                 const response = await totemAuthService.makeAuthenticatedRequest({
                     method: 'GET',
-                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
+                    url: `${API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
                 });
 
                 const { categories, message } = response.data;
@@ -131,7 +134,7 @@
             try {
                 const response = await totemAuthService.makeAuthenticatedRequest({
                     method: 'POST',
-                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services/${serviceId}/ticket`,
+                    url: `${API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services/${serviceId}/ticket`,
                     responseType: 'blob'
                 });
 
@@ -161,7 +164,7 @@
             try {
                 const queueResponse = await totemAuthService.makeAuthenticatedRequest({
                     method: 'GET',
-                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
+                    url: `${API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
                 });
 
                 const queue = queueResponse.data.categories
@@ -173,14 +176,12 @@
                     return;
                 }
 
-                const response = await axios.post(
-                    `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/queues/totem/fallback`,
-                    { queue_id: queue.queue_id },
-                    {
-                        headers: { 'Totem-Token': 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF' },
-                        responseType: 'blob'
-                    }
-                );
+                const response = await totemAuthService.makeAuthenticatedRequest({
+                    method: 'POST',
+                    url: `${API_BASE}/api/branch_admin/branches/${totemAuthService.getTotemInfo().branchId}/queues/totem`,
+                    data: { queue_id: queue.queue_id },
+                    responseType: 'blob'
+                });
 
                 const blob = new Blob([response.data], { type: 'application/pdf' });
                 const url = window.URL.createObjectURL(blob);

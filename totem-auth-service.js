@@ -1,46 +1,82 @@
 // API Base URL
 const API_BASE = 'https://fila-facilita2-0-4uzw.onrender.com';
 
+// Token fixo (mover para variável de ambiente em produção)
+const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+
+// Função para exibir indicador de carregamento
+function showLoading(show = true) {
+    const loadingEl = document.getElementById('loading-overlay');
+    if (loadingEl) {
+        loadingEl.classList.toggle('hidden', !show);
+        console.debug(`Indicador de carregamento: ${show ? 'visível' : 'oculto'}`);
+    } else {
+        console.warn("Elemento de loading não encontrado");
+    }
+}
+
+// Função para exibir mensagens de toast
+function showMessage(message, type = 'success') {
+    console.debug(`Exibindo mensagem (${type}): ${message}`);
+    
+    let toastContainer = document.getElementById('toast-container');
+    
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `p-4 rounded-lg shadow-lg transition-all duration-300 ${
+        type === 'success' ? 'bg-green-100 text-green-800' :
+        type === 'error' ? 'bg-red-100 text-red-800' : 
+        'bg-blue-100 text-blue-800'
+    }`;
+    
+    toast.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button class="ml-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    toast.querySelector('button').addEventListener('click', () => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    });
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.classList.add('opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 5000);
+}
+
 // Serviço de Autenticação para Totens
 class TotemAuthService {
     constructor() {
-        this.totem = null;
+        this.API_BASE = API_BASE;
         this.setupAxiosInterceptors();
-        
-        // Verificar token válido na inicialização
-        this.validateTokenOnStart();
-    }
-    
-    validateTokenOnStart() {
-        try {
-            const token = this.getToken();
-            if (!token) return;
-            
-            const tokenParts = token.split('.');
-            if (tokenParts.length !== 3) {
-                console.warn("Token inválido encontrado. Removendo...");
-                this.clearAuthData();
-            }
-        } catch (error) {
-            console.error("Erro ao validar token inicial:", error);
-            this.clearAuthData();
-        }
     }
 
     setupAxiosInterceptors() {
         axios.interceptors.request.use(
             (config) => {
-                const token = this.getToken();
-                if (token) {
-                    if (token.startsWith('Bearer ')) {
-                        config.headers['Authorization'] = token;
-                    } else {
-                        config.headers['Authorization'] = `Bearer ${token}`;
-                    }
-                    
-                    console.debug("Enviando requisição com token:", 
-                                  config.headers['Authorization'].substring(0, 20) + "...");
-                }
+                // Adicionar token fixo ao cabeçalho Totem-Token
+                config.headers['Totem-Token'] = TOTEM_TOKEN;
+                console.debug("Enviando requisição com Totem-Token:", 
+                              TOTEM_TOKEN.substring(0, 20) + "...");
                 return config;
             },
             (error) => {
@@ -55,13 +91,73 @@ class TotemAuthService {
                 console.error("Erro na resposta:", error.response?.status, error.message);
                 
                 if (error.response && error.response.status === 401) {
-                    console.warn("Erro 401 - Redirecionando para login do totem");
-                    this.clearAuthData();
-                    window.location.href = '/index.html?expired=true';
+                    console.warn("Erro 401 - Token de totem inválido");
+                    showMessage('Token inválido. Contate o administrador.', 'error');
+                    // Redirecionar para página de configuração
+                    window.location.href = '/index.html?error=invalid-token';
+                } else if (error.response && error.response.status === 404) {
+                    console.warn("Erro 404 - Recurso não encontrado");
+                    showMessage('Filial ou recurso não encontrado. Verifique a configuração.', 'error');
+                } else if (error.response && error.response.status >= 500) {
+                    console.warn("Erro 500 - Erro no servidor");
+                    showMessage('Erro no servidor. Tente novamente mais tarde.', 'error');
+                } else if (error.code === 'ECONNABORTED') {
+                    console.warn("Erro de timeout na requisição");
+                    showMessage('Tempo limite de conexão excedido. Tente novamente.', 'error');
+                } else if (error.code === 'ERR_NETWORK') {
+                    console.warn("Erro de rede");
+                    showMessage('Falha na conexão com o servidor. Verifique sua rede.', 'error');
                 }
                 return Promise.reject(error);
             }
         );
+    }
+
+    isConfigured() {
+        const branchId = localStorage.getItem('branchId');
+        if (branchId) {
+            console.debug("Totem configurado com branchId:", branchId);
+            return true;
+        }
+        console.debug("Totem não configurado");
+        return false;
+    }
+
+    setBranchId(branchId, branchName) {
+        try {
+            const sanitizedBranchId = this.sanitizeInput(branchId.trim());
+            localStorage.setItem('branchId', sanitizedBranchId);
+            if (branchName) localStorage.setItem('branchName', this.sanitizeInput(branchName.trim()));
+            console.info("Dados de configuração do totem armazenados com sucesso");
+            console.debug("Branch ID:", sanitizedBranchId);
+            return true;
+        } catch (error) {
+            console.error("Erro ao armazenar dados de configuração:", error);
+            return false;
+        }
+    }
+
+    getTotemInfo() {
+        return {
+            branchId: localStorage.getItem('branchId'),
+            branchName: localStorage.getItem('branchName')
+        };
+    }
+
+    setTotemInfoUI() {
+        const info = this.getTotemInfo();
+        if (document.getElementById('branch-name') && info.branchName) {
+            document.getElementById('branch-name').textContent = info.branchName;
+        }
+        console.debug("Interface de totem atualizada com sucesso");
+    }
+
+    clearConfigData() {
+        const keys = ['branchId', 'branchName'];
+        keys.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        console.info("Dados de configuração do totem limpos");
     }
 
     sanitizeInput(input) {
@@ -70,189 +166,100 @@ class TotemAuthService {
         return div.innerHTML;
     }
 
-    getToken() {
-        return localStorage.getItem('totemToken') || sessionStorage.getItem('totemToken');
-    }
-
-    isAuthenticated() {
-        const token = this.getToken();
-        const branchId = localStorage.getItem('branchId') || sessionStorage.getItem('branchId');
-        
-        if (token && branchId) {
-            console.debug("Totem autenticado com branchId:", branchId);
-            return true;
-        }
-        
-        console.debug("Totem não autenticado");
-        return false;
-    }
-
-    storeAuthData(data, rememberMe) {
-        if (!data || !data.token || !data.branch_id) {
-            console.error("Dados de autenticação inválidos:", data);
-            return false;
-        }
-        
-        const storage = rememberMe ? localStorage : sessionStorage;
-        
-        this.clearAuthData();
-        
-        try {
-            storage.setItem('totemToken', data.token);
-            storage.setItem('branchId', data.branch_id);
-            if (data.branch_name) storage.setItem('branchName', data.branch_name);
-            
-            console.info("Dados de autenticação do totem armazenados com sucesso");
-            console.debug("Token:", data.token.substring(0, 15) + "...");
-            console.debug("Branch ID:", data.branch_id);
-            
-            return true;
-        } catch (error) {
-            console.error("Erro ao armazenar dados de autenticação:", error);
-            return false;
-        }
-    }
-
-    getTotemInfo() {
-        return {
-            branchId: localStorage.getItem('branchId') || sessionStorage.getItem('branchId'),
-            branchName: localStorage.getItem('branchName') || sessionStorage.getItem('branchName')
-        };
-    }
-
-    setTotemInfoUI() {
-        const info = this.getTotemInfo();
-        
-        if (document.getElementById('branch-name') && info.branchName) {
-            document.getElementById('branch-name').textContent = info.branchName;
-        }
-        
-        console.debug("Interface de totem atualizada com sucesso");
-    }
-
-    clearAuthData() {
-        const keys = ['totemToken', 'branchId', 'branchName'];
-        keys.forEach(key => {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-        });
-        console.info("Dados de autenticação do totem limpos");
-    }
-
-    async login(branchId, password, rememberMe = false) {
-        try {
-            const sanitizedBranchId = this.sanitizeInput(branchId.trim());
-            
-            console.info(`Iniciando login do totem para branchId ${sanitizedBranchId}`);
-            console.debug("Enviando requisição para:", `${API_BASE}/api/totem/login`);
-            
-            const response = await axios.post(
-                `${API_BASE}/api/totem/login`,
-                { branch_id: sanitizedBranchId, password },
-                {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    timeout: 20000 // Aumentado para 20s para evitar timeout precoce
-                }
-            );
-            
-            console.debug("Resposta de login recebida:", {
-                status: response.status,
-                data: response.data
-            });
-            
-            const data = response.data;
-            if (!data || typeof data !== 'object' || !data.success || !data.token) {
-                console.error("Resposta inválida do servidor:", data);
-                return {
-                    success: false,
-                    message: 'Erro no servidor: resposta inválida ou token não recebido'
-                };
-            }
-            
-            const stored = this.storeAuthData(data, rememberMe);
-            if (!stored) {
-                return {
-                    success: false,
-                    message: 'Erro ao armazenar credenciais no navegador'
-                };
-            }
-            
-            return {
-                success: true,
-                branchId: data.branch_id
-            };
-        } catch (error) {
-            console.error('Erro detalhado de login do totem:', {
-                message: error.message,
-                code: error.code,
-                response: error.response ? {
-                    status: error.response.status,
-                    data: error.response.data,
-                    headers: error.response.headers
-                } : null
-            });
-            
-            let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
-            
-            if (error.response) {
-                if (error.response.status === 400) {
-                    errorMessage = 'Branch ID ou senha não fornecidos.';
-                } else if (error.response.status === 401) {
-                    errorMessage = 'Senha incorreta. Tente novamente.';
-                } else if (error.response.status === 404) {
-                    errorMessage = 'Filial não encontrada.';
-                } else if (error.response.status >= 500) {
-                    errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
-                }
-                
-                if (error.response.data && error.response.data.error) {
-                    errorMessage = error.response.data.error;
-                }
-            } else if (error.code === 'ECONNABORTED') {
-                errorMessage = 'Tempo limite de conexão excedido. Tente novamente.';
-            } else if (error.code === 'ERR_NETWORK') {
-                errorMessage = 'Falha na conexão com o servidor. Verifique sua rede.';
-            } else if (error.message.includes('CORS')) {
-                errorMessage = 'Erro de configuração de CORS. Contate o administrador.';
-            }
-            
-            return {
-                success: false,
-                message: errorMessage
-            };
-        }
-    }
-
-    async logout() {
-        try {
-            console.info("Iniciando logout do totem...");
-            this.clearAuthData();
-        } catch (error) {
-            console.error('Erro ao fazer logout:', error);
-        } finally {
-            console.info("Redirecionando para página de login do totem");
-            window.location.href = '/index.html';
-        }
-    }
-
     redirectToTotemDashboard() {
         console.info("Redirecionando para dashboard do totem");
         window.location.href = '/totem-dashboard.html';
     }
 
     checkAuthAndRedirect() {
-        if (!this.isAuthenticated()) {
-            console.warn("Totem não autenticado, redirecionando para login");
+        if (!this.isConfigured()) {
+            console.warn("Totem não configurado, redirecionando para configuração");
             window.location.href = '/index.html';
             return false;
         }
-        console.info("Verificação de autenticação: OK");
+        console.info("Verificação de configuração: OK");
         return true;
+    }
+
+    async makeAuthenticatedRequest(config) {
+        if (!this.isConfigured()) {
+            throw new Error('Totem não configurado');
+        }
+        return axios(config);
     }
 }
 
-// Exportar instância única do serviço de autenticação do totem
+// Exportar instância única do serviço
 const totemAuthService = new TotemAuthService();
+
+// Inicialização da página
+document.addEventListener('DOMContentLoaded', () => {
+    console.info("Inicializando página do totem...");
+
+    // Verificar se estamos na página de configuração
+    if (window.location.pathname.includes('index.html')) {
+        console.debug("Página de configuração do totem detectada");
+
+        const configForm = document.getElementById('totem-config-form');
+        if (configForm) {
+            console.debug("Formulário de configuração encontrado, configurando handlers");
+
+            // Verificar se há erro de token inválido
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'invalid-token') {
+                showMessage('Token inválido. Contate o administrador.', 'error');
+            }
+
+            configForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.debug("Evento de submissão do formulário de configuração disparado");
+
+                showLoading(true);
+
+                const branchId = document.getElementById('branch-id').value;
+                const branchName = document.getElementById('branch-name')?.value || '';
+
+                console.info(`Tentativa de configuração do totem para branchId ${branchId}`);
+
+                try {
+                    const success = totemAuthService.setBranchId(branchId, branchName);
+                    if (success) {
+                        console.info("Configuração do totem bem-sucedida!");
+                        showMessage('Configuração salva com sucesso! Redirecionando...', 'success');
+                        setTimeout(() => {
+                            totemAuthService.redirectToTotemDashboard();
+                        }, 1000);
+                    } else {
+                        console.warn("Falha ao salvar configuração do totem");
+                        showMessage('Erro ao salvar configuração. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error("Erro inesperado ao processar configuração do totem:", error);
+                    showMessage('Erro inesperado. Verifique os dados e tente novamente.', 'error');
+                } finally {
+                    console.debug("Escondendo indicador de carregamento");
+                    showLoading(false);
+                }
+            });
+
+            const branchIdInput = document.getElementById('branch-id');
+            if (branchIdInput) {
+                branchIdInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.debug("Tecla Enter pressionada no campo de branchId");
+                        configForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+        } else {
+            console.warn("Formulário de configuração do totem não encontrado!");
+        }
+    } else if (totemAuthService.isConfigured()) {
+        console.info("Totem configurado, redirecionando para o dashboard...");
+        totemAuthService.redirectToTotemDashboard();
+    } else {
+        console.warn("Totem não configurado, redirecionando para página de configuração...");
+        window.location.href = '/index.html';
+    }
+});
