@@ -3,203 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Fila Facilita</title>
+    <title>Totem Facilita - Login e Serviços</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f4f8;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background-color: #0054a6;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-            margin-bottom: 20px;
-        }
-        
-        .screen {
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        input, button {
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            width: 100%;
-            font-size: 16px;
-        }
-        
-        button {
-            background-color: #0054a6;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #003b75;
-        }
-        
-        .category-item, .service-item {
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            border-left: 4px solid #0054a6;
-        }
-        
-        .category-item:hover, .service-item:hover {
-            background-color: #e9ecef;
-        }
-        
-        .error-message {
-            color: #d9534f;
-            padding: 10px;
-            background-color: #f8d7da;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        
-        #login-error {
-            color: #d9534f;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .btn-link {
-            color: #0054a6;
-            text-decoration: underline;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            font-size: 14px;
-            display: inline-block;
-            width: auto;
-        }
-        
-        .navigation {
+            background-color: #f4f4f4;
             display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        
-        .ticket-success {
-            text-align: center;
+        .container {
+            background: white;
             padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
         }
-        
-        .ticket-success h2 {
-            color: #28a745;
+        h1 {
+            color: #333;
+            font-size: 2em;
         }
-        
-        .download-link {
-            display: inline-block;
-            margin: 15px 0;
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.2em;
+            width: 80%;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
             padding: 10px 20px;
+            font-size: 1.2em;
             background-color: #28a745;
             color: white;
-            text-decoration: none;
+            border: none;
             border-radius: 5px;
-            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
         }
-        
-        .download-link:hover {
+        button:hover {
             background-color: #218838;
         }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 10px;
-            }
-            
-            .screen {
-                padding: 15px;
-            }
+        .category, .service {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .service:hover, .category:hover {
+            background: #d3d3d3;
+        }
+        .queue-display {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 1.1em;
+        }
+        .success {
+            color: green;
+            font-size: 1.1em;
+        }
+        #queueList div {
+            font-size: 1.2em;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Totem Fila Facilita</h1>
+        <h1>Totem Facilita</h1>
+        <div id="loginSection">
+            <input type="text" id="branchId" placeholder="Digite o ID da Filial" />
+            <button onclick="login()">Entrar</button>
         </div>
-        
-        <!-- Tela de Login -->
-        <div id="login-screen" class="screen">
-            <h2>Login da Filial</h2>
-            <div>
-                <label for="branch-id">ID da Filial:</label>
-                <input type="text" id="branch-id" placeholder="Digite o ID da filial">
-                <div id="login-error"></div>
-                <button id="login-button" onclick="login()">Entrar</button>
-            </div>
-            <div class="example">
-                <p>Exemplo de ID: d0b19c4d-a9e4-46cf-a81a-714eab48ebbb</p>
-            </div>
+        <div id="servicesSection" style="display: none;">
+            <h2>Serviços Disponíveis</h2>
+            <div id="branchStatus"></div>
+            <div id="categories"></div>
+            <button onclick="showCategories()">Voltar para Categorias</button>
+            <div id="services"></div>
         </div>
-        
-        <!-- Tela de Categorias -->
-        <div id="categories-screen" class="screen hidden">
-            <h2>Categorias de Serviços</h2>
-            <div id="categories-list">
-                <!-- Lista de categorias será preenchida aqui -->
-            </div>
-            <div class="navigation">
-                <button id="logout-button" onclick="logout()">Sair</button>
-            </div>
+        <div id="queueSection" class="queue-display">
+            <h2>Filas Ativas</h2>
+            <div id="queueList"></div>
         </div>
-        
-        <!-- Tela de Serviços -->
-        <div id="services-screen" class="screen hidden">
-            <h2 id="category-title">Serviços</h2>
-            <div id="services-list">
-                <!-- Lista de serviços será preenchida aqui -->
-            </div>
-            <div class="navigation">
-                <button id="back-button" onclick="backToCategories()">Voltar</button>
-            </div>
-        </div>
-        
-        <!-- Tela de Senha Gerada -->
-        <div id="ticket-screen" class="screen hidden">
-            <div class="ticket-success">
-                <h2>Senha Gerada com Sucesso!</h2>
-                <p id="ticket-info">Sua senha está pronta.</p>
-                <a id="ticket-download" class="download-link" href="#" download>Baixar Senha (PDF)</a>
-                <button id="ticket-done" onclick="backToCategories()">Voltar para Categorias</button>
-            </div>
-        </div>
+        <p id="message"></p>
     </div>
-    
-    <!-- Alternativa para carregar o script -->
-    <script src="script.js" onerror="alert('Erro ao carregar o script. Verifique a conexão.')"></script>
+
+    <script>
+        const API_URL = 'https://fila-facilita2-0-4uzw.onrender.com/api/totem/branches/';
+        const SOCKET_URL = 'https://fila-facilita2-0-4uzw.onrender.com';
+        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        let branchId = null;
+        let socket = null;
+
+        async function login() {
+            branchId = document.getElementById('branchId').value.trim();
+            if (!branchId) {
+                showMessage('Por favor, insira o ID da filial.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}${branchId}/services`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('servicesSection').style.display = 'block';
+                    displayBranchStatus(data.branch_status);
+                    displayCategories(data.categories);
+                    initializeSocket();
+                    loadQueues();
+                    showMessage('Login bem-sucedido!', 'success');
+                } else {
+                    showMessage(data.error || 'Erro ao carregar serviços.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao conectar com o servidor.', 'error');
+                console.error(error);
+            }
+        }
+
+        function displayBranchStatus(status) {
+            const statusDiv = document.getElementById('branchStatus');
+            statusDiv.innerHTML = `<p>Filial: ${status.is_open ? 'Aberta' : 'Fechada'} - ${status.message}</p>`;
+        }
+
+        function displayCategories(categories) {
+            const categoriesDiv = document.getElementById('categories');
+            categoriesDiv.innerHTML = '';
+            categories.forEach(category => {
+                const div = document.createElement('div');
+                div.className = 'category';
+                div.textContent = category.category_name;
+                div.onclick = () => loadServices(category.category_id);
+                categoriesDiv.appendChild(div);
+            });
+        }
+
+        async function loadServices(categoryId) {
+            try {
+                const response = await fetch(`${API_URL}${branchId}/categories/${categoryId}/services`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('categories').style.display = 'none';
+                    displayServices(data.services, data.category_name);
+                } else {
+                    showMessage(data.error || 'Erro ao carregar serviços.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao conectar com o servidor.', 'error');
+                console.error(error);
+            }
+        }
+
+        function displayServices(services, categoryName) {
+            const servicesDiv = document.getElementById('services');
+            servicesDiv.innerHTML = `<h3>${categoryName}</h3>`;
+            services.forEach(service => {
+                const div = document.createElement('div');
+                div.className = 'service';
+                div.innerHTML = `
+                    ${service.service_name} 
+                    (Fila: ${service.active_tickets} | Espera: ${service.estimated_wait_time})
+                `;
+                div.onclick = () => generateTicket(service.service_id);
+                servicesDiv.appendChild(div);
+            });
+        }
+
+        async function generateTicket(serviceId) {
+            if (!confirm('Deseja gerar um ticket para este serviço?')) return;
+            try {
+                const response = await fetch(`${API_URL}${branchId}/services/${serviceId}/ticket`, {
+                    method: 'POST',
+                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ticket_${serviceId}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showMessage('Ticket gerado com sucesso!', 'success');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.error || 'Erro ao gerar ticket.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao conectar com o servidor.', 'error');
+                console.error(error);
+            }
+        }
+
+        function showCategories() {
+            document.getElementById('categories').style.display = 'block';
+            document.getElementById('services').innerHTML = '';
+        }
+
+        async function loadQueues() {
+            try {
+                const response = await fetch(`${API_URL}${branchId}/display_queues`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    displayQueues(data.queues);
+                } else {
+                    showMessage(data.error || 'Erro ao carregar filas.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao conectar com o servidor.', 'error');
+                console.error(error);
+            }
+        }
+
+        function displayQueues(queues) {
+            const queueList = document.getElementById('queueList');
+            queueList.innerHTML = '';
+            queues.forEach(queue => {
+                const div = document.createElement('div');
+                div.textContent = `${queue.service_name}: ${queue.current_ticket} (Espera: ${queue.estimated_wait_time})`;
+                queueList.appendChild(div);
+            });
+        }
+
+        function initializeSocket() {
+            socket = io(SOCKET_URL, {
+                transports: ['websocket'],
+                cors_allowed_origins: 'https://totemfacilita.netlify.app'
+            });
+
+            socket.on('connect', () => {
+                console.log('Conectado ao WebSocket');
+                socket.emit('join', { branch_id: branchId });
+            });
+
+            socket.on('ticket_issued', (data) => {
+                loadQueues();
+                showMessage(`Novo ticket emitido: ${data.ticket_number}`, 'success');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Desconectado do WebSocket');
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageP = document.getElementById('message');
+            messageP.textContent = message;
+            messageP.className = type;
+            setTimeout(() => { messageP.textContent = ''; messageP.className = ''; }, 5000);
+        }
+    </script>
 </body>
 </html>
