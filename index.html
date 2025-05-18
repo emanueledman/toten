@@ -1,255 +1,981 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Totem de Autoatendimento - Conservatória de Luanda</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        #loading {
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary-color: #c8102e;
+            --primary-dark: #a00d26;
+            --primary-light: #e63946;
+            --secondary-color: #ffd700;
+            --secondary-light: #ffec5d;
+            --civil-color: #1d3557;
+            --predial-color: #457b9d;
+            --comercial-color: #f4a261;
+            --notariado-color: #2a9d8f;
+            --text-dark: #000000;
+            --text-light: #ffffff;
+            --background-color: #0a1a2e;
+            --panel-bg: #102442;
+            --highlight-color: #ffd700;
+            --active-highlight: #ffee99;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --glass-effect: rgba(255, 255, 255, 0.1);
+            --gradient-start: #c8102e;
+            --gradient-end: #a00d26;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-light);
+            overflow: hidden;
+            min-height: 100vh;
+            background-image: linear-gradient(45deg, var(--background-color) 0%, #112a4a 100%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            z-index: -1;
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--gradient-start), --gradient-end);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 90px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--secondary-color), var(--secondary-light));
+        }
+
+        .conservatory-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .conservatory-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-right: 15px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            color: var(--text-dark);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: rotate(360deg);
+        }
+
+        .conservatory-name {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--text-light), var(--secondary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .branch-info {
+            display: flex;
+            align-items: center;
+            color: var(--text-light);
+        }
+
+        .branch-info i {
+            font-size: 24px;
+            margin-right: 10px;
+            color: var(--secondary-color);
+            animation: pulse 2s infinite;
+        }
+
+        .branch-details {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--secondary-light);
+        }
+
+        .accessibility-controls {
+            position: absolute;
+            top: 100px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .accessibility-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            font-size: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .accessibility-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 7px 20px var(--shadow-color);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            margin: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-message h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .welcome-message p {
+            font-size: 20px;
+            color: var(--secondary-light);
+            margin-top: 10px;
+        }
+
+        .content-area {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .category-container, .service-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .category-card, .service-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            border: 1px solid var(--glass-effect);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover, .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow-color);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .category-card i, .service-card i {
+            font-size: 48px;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .category-card h3, .service-card h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .category-card p, .service-card p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .confirmation-container, .ticket-container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .confirmation-container h2, .ticket-container h3 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .service-details {
+            margin-bottom: 20px;
+        }
+
+        .service-info p {
+            font-size: 18px;
+            color: var(--text-light);
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .service-info span:first-child {
+            font-weight: 600;
+            color: var(--secondary-light);
+        }
+
+        .wait-time {
+            font-size: 20px;
+            color: var(--text-light);
+            margin-top: 20px;
+        }
+
+        .wait-time strong {
+            color: var(--highlight-color);
+        }
+
+        .ticket-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            margin-bottom: 20px;
+        }
+
+        .ticket-info p {
+            font-size: 18px;
+            color: var(--text-light);
+            margin: 10px 0;
+        }
+
+        .ticket-number {
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--highlight-color);
+            margin: 20px 0;
+            text-shadow: 0 3px 8px var(--shadow-color);
+        }
+
+        .ticket-qr img {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .ticket-instructions p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 10px 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--secondary-color), var(--secondary-light));
+            color: var(--text-dark);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px var(--shadow-color);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 4s infinite linear;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .footer {
+            height: 70px;
+            background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 -4px 20px var(--shadow-color);
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--secondary-color), var(--secondary-light));
+        }
+
+        .footer-info p {
+            font-size: 16px;
+            color: var(--text-light);
+            margin: 5px 0;
+        }
+
+        .loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
             align-items: center;
-            color: white;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.3s ease;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
         }
-        #loading.hidden {
-            opacity: 0;
-            pointer-events: none;
+
+        .loading-screen.active {
+            display: flex;
         }
-        #toast {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 9999;
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--secondary-color);
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-message {
+            font-size: 20px;
+            color: var(--text-light);
+            margin-top: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .btn:focus, .category-card:focus, .service-card:focus {
+            outline: 2px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        .high-contrast .category-card,
+        .high-contrast .service-card,
+        .high-contrast .confirmation-container,
+        .high-contrast .ticket-card {
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+
+        .high-contrast .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .high-contrast .btn-secondary {
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        @media screen and (max-width: 1200px) {
+            .category-container, .service-list {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .welcome-message h2 {
+                font-size: 28px;
+            }
+
+            .welcome-message p {
+                font-size: 18px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+            }
+
+            .conservatory-name {
+                font-size: 24px;
+            }
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+            }
+
+            .accessibility-controls {
+                top: 120px;
+                right: 15px;
+            }
+
+            .confirmation-container, .ticket-container {
+                padding: 20px;
+            }
+
+            .ticket-number {
+                font-size: 48px;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div id="loading" class="hidden">Carregando...</div>
-    <div id="toast"></div>
-    <div id="login" class="flex items-center justify-center h-screen">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-            <h1 class="text-xl font-bold mb-4 text-center">Login do Totem</h1>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="branch-id" class="block text-sm font-medium text-gray-700">ID da Filial</label>
-                    <input type="text" id="branch-id" value="d0b19c4d-a9e4-46cf-a81a-714eab48ebbb" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="ID da Filial" required>
+<body>
+    <div class="container">
+        <div class="header" role="banner">
+            <div class="conservatory-info">
+                <div class="conservatory-logo">
+                    <div class="logo-icon">CL</div>
+                    <div class="conservatory-name">CONSERVATÓRIA DE LUANDA</div>
                 </div>
+            </div>
+            <div class="branch-info">
+                <i class="fas fa-map-marker-alt"></i>
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Senha" required>
+                    <span>Conservatória Central</span>
+                    <div class="branch-details">Av. 4 de Fevereiro, Luanda</div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Entrar</button>
-            </form>
+            </div>
+        </div>
+
+        <div class="accessibility-controls" role="region" aria-label="Controles de Acessibilidade">
+            <button class="accessibility-btn" onclick="toggleHighContrast()" title="Alto Contraste" aria-label="Ativar alto contraste">
+                <i class="fas fa-adjust"></i>
+            </button>
+            <button class="accessibility-btn" onclick="increaseFontSize()" title="Aumentar Fonte" aria-label="Aumentar tamanho da fonte">
+                <i class="fas fa-text-height"></i>
+            </button>
+            <button class="accessibility-btn" onclick="toggleVirtualKeyboard()" title="Teclado Virtual" aria-label="Ativar teclado virtual">
+                <i class="fas fa-keyboard"></i>
+            </button>
+        </div>
+
+        <div class="main-content">
+            <div class="welcome-message">
+                <h2>Bem-vindo!</h2>
+                <p>Selecione uma categoria para retirar sua senha</p>
+            </div>
+
+            <div class="content-area">
+                <!-- Tela de Categorias -->
+                <div class="screen active" id="categories-screen">
+                    <div class="category-container" id="category-container">
+                        <!-- Preenchido dinamicamente via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Tela de Serviços -->
+                <div class="screen" id="services-screen">
+                    <div class="service-list" id="service-list-container">
+                        <!-- Preenchido dinamicamente via JavaScript -->
+                    </div>
+                    <div class="buttons-container">
+                        <button class="btn btn-secondary" onclick="showCategories()">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </button>
+                        <button class="btn btn-secondary" onclick="restart()">
+                            <i class="fas fa-home"></i> Início
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tela de Confirmação -->
+                <div class="screen" id="confirmation-screen">
+                    <div class="confirmation-container">
+                        <h2>Confirmar Serviço</h2>
+                        <div class="service-details">
+                            <h3 id="confirm-service-name"></h3>
+                            <div class="service-info">
+                                <p>
+                                    <span>Departamento:</span>
+                                    <span id="confirm-department"></span>
+                                </p>
+                                <p>
+                                    <span>Senhas emitidas hoje:</span>
+                                    <span id="confirm-tickets"></span>
+                                </p>
+                                <p>
+                                    <span>Senhas em espera:</span>
+                                    <span id="confirm-waiting"></span>
+                                </p>
+                            </div>
+                            <div class="wait-time">
+                                Tempo estimado de espera: <strong id="confirm-wait-time"></strong>
+                            </div>
+                        </div>
+                        <div class="buttons-container">
+                            <button class="btn btn-secondary" onclick="showServices(currentCategory)">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button class="btn btn-primary btn-large" onclick="generateTicket()">
+                                <i class="fas fa-ticket-alt"></i> Gerar Senha
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tela de Ticket -->
+                <div class="screen" id="ticket-screen">
+                    <div class="ticket-container">
+                        <div class="ticket-card">
+                            <div class="ticket-info">
+                                <h3>Senha de Atendimento</h3>
+                                <p id="ticket-date"></p>
+                                <p id="ticket-service"></p>
+                                <p id="ticket-sala"></p>
+                            </div>
+                            <div class="ticket-number" id="ticket-number"></div>
+                            <div class="ticket-qr">
+                                <img src="https://via.placeholder.com/150?text=QR+Code" alt="QR Code">
+                            </div>
+                            <div class="ticket-instructions">
+                                <p>Acompanhe sua senha pelo aplicativo.</p>
+                                <p>Seu ticket está sendo impresso.</p>
+                            </div>
+                        </div>
+                        <div class="buttons-container">
+                            <button class="btn btn-primary" onclick="restart()">
+                                <i class="fas fa-home"></i> Iniciar Novo Atendimento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer" role="contentinfo">
+            <div class="footer-info">
+                <p>Totem de Autoatendimento v1.1</p>
+                <p>© 2025 Conservatória de Luanda</p>
+            </div>
+            <div class="footer-controls">
+                <button class="btn btn-secondary" onclick="toggleHelp()">
+                    <i class="fas fa-question-circle"></i> Ajuda
+                </button>
+            </div>
         </div>
     </div>
-    <div id="dashboard" class="hidden">
-        <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold">Totem - <span id="branch-name"></span></h1>
-            <button id="logout" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md">Sair</button>
-        </header>
-        <main class="p-6">
-            <h2 class="text-lg font-semibold mb-4">Serviços Disponíveis</h2>
-            <div id="services" class="grid grid-cols-1 gap-4"></div>
-        </main>
+
+    <div class="loading-screen" id="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-message">Gerando sua senha...</div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
     <script>
-        const API_BASE = 'https://fila-facilita2-0-4uzw.onrender.com';
-        const FIXED_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        // Configurações
+        const API_BASE_URL = 'https://fila-facilita2-0-4uzw.onrender.com/api/totem';
+        const TOTEM_TOKEN = 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF';
+        const BRANCH_ID = 'd0b19c4d-a9e4-46cf-a81a-714eab48ebbb';
 
-        function showLoading(show = true) {
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.classList.toggle('hidden', !show);
-                if (show) {
-                    setTimeout(() => loading.classList.add('hidden'), 2000);
-                }
-            }
+        // Estado
+        let currentCategory = '';
+        let currentService = '';
+        let isBranchOpen = false;
+        let categoriesData = [];
+        let queuesData = [];
+
+        // Ícones genéricos para categorias (caso a API não forneça)
+        const defaultIcons = ['fa-file-alt', 'fa-home', 'fa-building', 'fa-pen', 'fa-folder', 'fa-cog'];
+        const defaultColors = ['#1d3557', '#457b9d', '#f4a261', '#2a9d8f', '#6b7280', '#9ca3af'];
+
+        // Funções utilitárias
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function showMessage(message, type = 'success') {
-            console.log(`Mensagem: ${message} (${type})`);
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<div class="p-3 rounded-lg shadow-lg ${
-                type === 'success' ? 'bg-green-100 text-green-800' :
-                type === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-            }">${message}</div>`;
-            setTimeout(() => toast.innerHTML = '', 3000);
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '20px';
+            messageDiv.style.left = '50%';
+            messageDiv.style.transform = 'translateX(-50%)';
+            messageDiv.style.backgroundColor = type === 'error' ? '#fee2e2' : '#dcfce7';
+            messageDiv.style.color = type === 'error' ? '#dc2626' : '#15803d';
+            messageDiv.style.padding = '15px 30px';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.zIndex = '2000';
+            document.body.appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 5000);
         }
 
-        function setBranchInfo(branchId, branchName, token = null) {
-            localStorage.setItem('branchId', branchId);
-            localStorage.setItem('branchName', branchName);
-            if (token) localStorage.setItem('authToken', token);
+        function showLoading(show, message = 'Gerando sua senha...') {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.querySelector('.loading-message').textContent = message;
+            loadingScreen.classList.toggle('active', show);
         }
 
-        function getBranchInfo() {
-            return {
-                branchId: localStorage.getItem('branchId'),
-                branchName: localStorage.getItem('branchName'),
-                token: localStorage.getItem('authToken') || FIXED_TOKEN
-            };
-        }
-
-        function clearBranchInfo() {
-            localStorage.removeItem('branchId');
-            localStorage.removeItem('branchName');
-            localStorage.removeItem('authToken');
-        }
-
-        function isAuthenticated() {
-            return !!getBranchInfo().branchId;
-        }
-
-        async function login(branchId, password) {
-            showLoading(true);
+        // Carregar categorias da API
+        async function loadCategories() {
+            showLoading(true, 'Carregando serviços...');
             try {
-                console.log('Enviando login:', { branch_id: branchId });
-                const response = await axios.post(`${API_BASE}/api/totem/login`, { branch_id: branchId, password }, {
-                    headers: { 'Content-Type': 'application/json' },
-                    timeout: 10000
+                const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/services`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN },
+                    timeout: 10000,
                 });
-                console.log('Resposta login:', response.data);
-                const { success, branch_id, branch_name, token } = response.data;
-                if (success) {
-                    setBranchInfo(branch_id, branch_name, token);
-                    return { success: true };
-                }
-                return { success: false, message: 'Credenciais inválidas' };
+                categoriesData = response.data.categories;
+                isBranchOpen = response.data.branch_status.is_open;
+                updateCategoriesScreen();
+                showMessage(response.data.message, 'success');
             } catch (error) {
-                console.error('Erro no login:', error.response?.data || error.message);
-                return { success: false, message: error.response?.data?.error || 'Erro ao fazer login' };
+                const errorMessage = error.response?.data?.error || 'Erro ao carregar serviços. Tente novamente.';
+                showMessage(errorMessage, 'error');
+                updateCategoriesScreen(true);
             } finally {
                 showLoading(false);
             }
         }
 
-        async function loadServices() {
-            showLoading(true);
-            try {
-                const { branchId, token } = getBranchInfo();
-                console.log(`Carregando serviços para branchId: ${branchId}, token: ${token}`);
-                const headers = {
-                    'Totem-Token': token,
-                    'totem-token': token // Fallback para case sensitivity
-                };
-                console.log('Headers enviados:', headers);
-                const response = await axios.get(`${API_BASE}/api/totem/branches/${branchId}/services`, {
-                    headers,
-                    timeout: 10000
-                });
-                console.log('Resposta serviços:', JSON.stringify(response.data, null, 2));
-                const services = document.getElementById('services');
-                services.innerHTML = '';
+        // Atualizar tela de categorias dinamicamente
+        function updateCategoriesScreen(error = false) {
+            const categoryContainer = document.getElementById('category-container');
+            categoryContainer.innerHTML = '';
 
-                const data = response.data;
-                const categories = data.categories || data || [];
-                if (Array.isArray(categories) && categories.length) {
-                    categories.forEach(category => {
-                        const div = document.createElement('div');
-                        div.className = 'mb-4';
-                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name || 'Categoria'}</h3>`;
-                        (category.services || []).forEach(service => {
-                            const button = document.createElement('button');
-                            button.className = 'w-full bg-indigo-500 text-white py-2 px-3 rounded-md hover:bg-indigo-600 mb-2 text-left';
-                            button.textContent = `${service.service_name || 'Serviço'} (Espera: ${service.estimated_wait_time || 'N/A'})`;
-                            button.onclick = () => generateTicket(branchId, service.service_id);
-                            div.appendChild(button);
-                        });
-                        services.appendChild(div);
-                    });
-                } else {
-                    services.innerHTML = '<p class="text-gray-600">Nenhum serviço disponível.</p>';
-                    showMessage('Nenhum serviço encontrado', 'info');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar serviços:', error.response?.data || error.message);
-                showMessage(`Erro ao carregar serviços: ${error.response?.data?.error || error.message}`, 'error');
-            } finally {
-                showLoading(false);
+            if (error || categoriesData.length === 0) {
+                categoryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Nenhum serviço disponível no momento.</p>';
+                return;
             }
+
+            categoriesData.forEach((category, index) => {
+                const categoryCard = document.createElement('div');
+                const icon = defaultIcons[index % defaultIcons.length];
+                const color = defaultColors[index % defaultColors.length];
+                categoryCard.className = 'category-card';
+                categoryCard.style.background = `linear-gradient(to bottom, ${color}, rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.2))`;
+                categoryCard.onclick = () => showServices(category.category_id);
+                categoryCard.innerHTML = `
+                    <i class="fas ${icon}"></i>
+                    <h3>${category.category_name}</h3>
+                    <p>${category.services.length} serviço(s) disponível(is)</p>
+                `;
+                if (!isBranchOpen || category.services.length === 0) {
+                    categoryCard.classList.add('disabled');
+                    categoryCard.onclick = () => showMessage('Nenhum serviço disponível ou filial fechada.', 'error');
+                }
+                categoryContainer.appendChild(categoryCard);
+            });
         }
 
-        async function generateTicket(branchId, serviceId) {
+        // Carregar serviços por categoria
+        function showServices(categoryId) {
+            currentCategory = categoryId;
+            const categoryData = categoriesData.find(cat => cat.category_id === categoryId);
+            const serviceList = document.getElementById('service-list-container');
+            serviceList.innerHTML = '';
+
+            const categoryTitle = document.createElement('h2');
+            categoryTitle.style.width = '100%';
+            categoryTitle.style.marginBottom = '1rem';
+            categoryTitle.style.textAlign = 'center';
+            categoryTitle.textContent = categoryData?.category_name || 'Serviços';
+            serviceList.appendChild(categoryTitle);
+
+            if (!categoryData || !categoryData.services || categoryData.services.length === 0) {
+                serviceList.innerHTML += '<p style="grid-column: 1 / -1; text-align: center;">Nenhum serviço disponível para esta categoria.</p>';
+            } else {
+                categoryData.services.forEach(service => {
+                    const serviceCard = document.createElement('div');
+                    serviceCard.className = 'service-card';
+                    serviceCard.onclick = () => showConfirmation(categoryId, service.service_id, service.service_name, service);
+                    serviceCard.innerHTML = `
+                        <i class="fas fa-file-alt"></i>
+                        <h3>${service.service_name}</h3>
+                        <p>Fila: ${service.active_tickets} pessoas | Tempo: ${service.estimated_wait_time}</p>
+                    `;
+                    serviceList.appendChild(serviceCard);
+                });
+            }
+
+            showScreen('services-screen');
+        }
+
+        // Mostrar tela de confirmação
+        function showConfirmation(categoryId, serviceId, serviceName, serviceData) {
+            currentCategory = categoryId;
+            currentService = serviceId;
+
+            const categoryData = categoriesData.find(cat => cat.category_id === categoryId);
+            document.getElementById('confirm-service-name').textContent = serviceName;
+            document.getElementById('confirm-department').textContent = categoryData?.category_name || 'Desconhecido';
+            document.getElementById('confirm-tickets').textContent = serviceData.active_tickets || '0';
+            document.getElementById('confirm-waiting').textContent = serviceData.active_tickets || '0';
+            document.getElementById('confirm-wait-time').textContent = serviceData.estimated_wait_time || 'Indisponível';
+
+            showScreen('confirmation-screen');
+        }
+
+        // Gerar ticket
+        async function generateTicket() {
+            if (!isBranchOpen) {
+                showMessage('Não é possível gerar tickets: filial fechada.', 'error');
+                return;
+            }
+
             showLoading(true);
             try {
-                const { token } = getBranchInfo();
-                console.log(`Gerando ticket para branchId: ${branchId}, serviceId: ${serviceId}, token: ${token}`);
                 const response = await axios.post(
-                    `${API_BASE}/api/totem/branches/${branchId}/services/${serviceId}/ticket`,
+                    `${API_BASE_URL}/branches/${BRANCH_ID}/services/${currentService}/ticket`,
                     {},
-                    { headers: { 'Totem-Token': token, 'totem-token': token }, responseType: 'blob', timeout: 10000 }
+                    {
+                        headers: { 'Totem-Token': TOTEM_TOKEN },
+                        responseType: 'blob',
+                        timeout: 15000,
+                    }
                 );
-                console.log('Resposta ticket:', response.headers['content-type']);
-                if (response.headers['content-type'] !== 'application/pdf') {
-                    throw new Error('Não é um PDF');
-                }
-                const blob = new Blob([response.data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
+
+                // Baixar PDF
+                const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `ticket_${serviceId}.pdf`;
+                link.download = `ticket_${currentService}.pdf`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                showMessage('Ticket gerado!', 'success');
+
+                // Mock para tela de ticket (backend não retorna ticket_number)
+                const now = new Date();
+                const ticketDate = `${now.toLocaleDateString('pt-PT')} - ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+                const ticketNumber = `X${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+                const randomSala = Math.floor(Math.random() * 12) + 1;
+
+                document.getElementById('ticket-date').textContent = ticketDate;
+                document.getElementById('ticket-service').textContent = document.getElementById('confirm-service-name').textContent;
+                document.getElementById('ticket-number').textContent = ticketNumber;
+                document.getElementById('ticket-sala').textContent = `SALA ${randomSala.toString().padStart(2, '0')}`;
+
+                showScreen('ticket-screen');
+                showMessage('Ticket gerado com sucesso!', 'success');
             } catch (error) {
-                console.error('Erro ao gerar ticket:', error.response?.data || error.message);
-                showMessage(`Erro ao gerar ticket: ${error.response?.data?.error || error.message}`, 'error');
+                const errorMessage = error.response?.data?.error || 'Erro ao gerar ticket. Tente novamente.';
+                showMessage(errorMessage, 'error');
             } finally {
                 showLoading(false);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginDiv = document.getElementById('login');
-            const dashboardDiv = document.getElementById('dashboard');
-            const loginForm = document.getElementById('login-form');
-            const logoutBtn = document.getElementById('logout');
-
-            if (isAuthenticated()) {
-                loginDiv.classList.add('hidden');
-                dashboardDiv.classList.remove('hidden');
-                const { branchName } = getBranchInfo();
-                document.getElementById('branch-name').textContent = branchName;
-                loadServices();
+        // Carregar filas ativas
+        async function loadQueues() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/branches/${BRANCH_ID}/display_queues`, {
+                    headers: { 'Totem-Token': TOTEM_TOKEN },
+                    timeout: 10000,
+                });
+                queuesData = response.data.queues;
+            } catch (error) {
+                console.error('Erro ao carregar filas:', error);
             }
+        }
 
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const branchId = document.getElementById('branch-id').value;
-                const password = document.getElementById('password').value;
-                const result = await login(branchId, password);
-                if (result.success) {
-                    document.getElementById('password').value = '';
-                    showMessage('Login bem-sucedido!', 'success');
-                    loginDiv.classList.add('hidden');
-                    dashboardDiv.classList.remove('hidden');
-                    const { branchName } = getBranchInfo();
-                    document.getElementById('branch-name').textContent = branchName;
-                    loadServices();
-                } else {
-                    showMessage(result.message, 'error');
-                }
-            });
+        // Polling para filas
+        function startQueuePolling() {
+            loadQueues();
+            setInterval(loadQueues, 30000);
+        }
 
-            logoutBtn.addEventListener('click', () => {
-                clearBranchInfo();
-                loginDiv.classList.remove('hidden');
-                dashboardDiv.classList.add('hidden');
-                showMessage('Sessão encerrada', 'success');
-            });
+        // Funções de acessibilidade
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        function increaseFontSize() {
+            const currentSize = parseFloat(getComputedStyle(document.body).fontSize);
+            document.body.style.fontSize = `${currentSize + 2}px`;
+        }
+
+        function toggleVirtualKeyboard() {
+            showMessage('Teclado virtual não implementado. Use o teclado físico ou entre em contato com o suporte.', 'error');
+        }
+
+        function toggleHelp() {
+            showMessage('Para assistência, entre em contato com o suporte no local ou ligue para +244 222 123 456.', 'error');
+        }
+
+        // Reiniciar fluxo
+        function showCategories() {
+            currentCategory = '';
+            showScreen('categories-screen');
+        }
+
+        function restart() {
+            currentCategory = '';
+            currentService = '';
+            showScreen('categories-screen');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+            startQueuePolling();
         });
     </script>
 </body>

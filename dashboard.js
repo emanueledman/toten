@@ -1,167 +1,87 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.info("Inicializando página de login do totem...");
-
-    // Verificar se estamos na página de login do totem
-    if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
-        console.debug("Página de login do totem detectada");
-
-        // Verificar se o totem já está autenticado
-        if (totemAuthService.isAuthenticated()) {
-            console.info("Totem já autenticado, redirecionando...");
-            totemAuthService.redirectToTotemDashboard();
+    if (window.location.pathname.includes('dashboard.html')) {
+        if (!authService.isAuthenticated()) {
+            window.location.href = 'index.html';
             return;
         }
 
-        const loginForm = document.getElementById('totem-login-form');
+        const { branchName } = authService.getBranchInfo();
+        const branchNameEl = document.getElementById('branch-name');
+        if (branchNameEl && branchName) {
+            branchNameEl.textContent = branchName;
+        }
 
-        // Se o formulário existir, configurar handler
-        if (loginForm) {
-            console.debug("Formulário de login do totem encontrado, configurando handlers");
+        document.getElementById('logout').addEventListener('click', () => authService.logout());
 
-            // Verificar se há um parâmetro de sessão expirada
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('expired') === 'true') {
-                showMessage('Sua sessão expirou. Por favor, faça login novamente.', 'error');
-            }
-
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                // Mostrar indicador de carregamento
-                showLoading(true);
-
-                const branchId = document.getElementById('branch-id').value;
-                const password = document.getElementById('password').value;
-                const rememberMe = document.getElementById('remember-me')?.checked || false;
-
-                console.info(`Tentativa de login do totem para branchId ${branchId} (lembrar: ${rememberMe})`);
-
-                try {
-                    const result = await totemAuthService.login(branchId, password, rememberMe);
-
-                    // Esconder indicador de carregamento
-                    showLoading(false);
-
-                    if (result.success) {
-                        console.info("Login do totem bem-sucedido!");
-                        // Limpar senha do formulário por segurança
-                        document.getElementById('password').value = '';
-
-                        // Mostrar mensagem de sucesso breve
-                        showMessage('Login bem-sucedido! Redirecionando...', 'success');
-
-                        // Aguardar um momento para mostrar mensagem de sucesso
-                        setTimeout(() => {
-                            // Redirecionar para o dashboard do totem
-                            totemAuthService.redirectToTotemDashboard();
-                        }, 1000);
-                    } else {
-                        console.warn("Falha no login do totem:", result.message);
-                        // Exibir mensagem de erro
-                        showMessage(result.message, 'error');
-                    }
-                } catch (error) {
-                    console.error("Erro ao processar login do totem:", error);
-                    showLoading(false);
-                    showMessage('Erro ao processar login. Tente novamente.', 'error');
-                }
-            });
-
-            // Adicionar event listener para tecla Enter no campo de senha
-            const passwordInput = document.getElementById('password');
-            if (passwordInput) {
-                passwordInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        loginForm.dispatchEvent(new Event('submit'));
-                    }
+        async function loadServices() {
+            showLoading(true);
+            try {
+                const { branchId } = authService.getBranchInfo();
+                const response = await axios.get(`${API_BASE}/api/totem/branches/${branchId}/services`, {
+                    headers: { 'Totem-Token': authService.token }
                 });
-            }
-        } else {
-            console.warn("Formulário de login do totem não encontrado!");
-        }
-    }
-});document.addEventListener('DOMContentLoaded', () => {
-    console.info("Inicializando página de login do totem...");
+                const { categories } = response.data;
 
-    // Verificar se estamos na página de login do totem
-    if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
-        console.debug("Página de login do totem detectada");
+                const services = document.getElementById('services');
+                services.innerHTML = '';
 
-        // Verificar se o totem já está autenticado
-        if (totemAuthService.isAuthenticated()) {
-            console.info("Totem já autenticado, redirecionando...");
-            totemAuthService.redirectToTotemDashboard();
-            return;
-        }
-
-        const loginForm = document.getElementById('totem-login-form');
-
-        // Se o formulário existir, configurar handler
-        if (loginForm) {
-            console.debug("Formulário de login do totem encontrado, configurando handlers");
-
-            // Verificar se há um parâmetro de sessão expirada
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('expired') === 'true') {
-                showMessage('Sua sessão expirou. Por favor, faça login novamente.', 'error');
-            }
-
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                // Mostrar indicador de carregamento
-                showLoading(true);
-
-                const branchId = document.getElementById('branch-id').value;
-                const password = document.getElementById('password').value;
-                const rememberMe = document.getElementById('remember-me')?.checked || false;
-
-                console.info(`Tentativa de login do totem para branchId ${branchId} (lembrar: ${rememberMe})`);
-
-                try {
-                    const result = await totemAuthService.login(branchId, password, rememberMe);
-
-                    // Esconder indicador de carregamento
-                    showLoading(false);
-
-                    if (result.success) {
-                        console.info("Login do totem bem-sucedido!");
-                        // Limpar senha do formulário por segurança
-                        document.getElementById('password').value = '';
-
-                        // Mostrar mensagem de sucesso breve
-                        showMessage('Login bem-sucedido! Redirecionando...', 'success');
-
-                        // Aguardar um momento para mostrar mensagem de sucesso
-                        setTimeout(() => {
-                            // Redirecionar para o dashboard do totem
-                            totemAuthService.redirectToTotemDashboard();
-                        }, 1000);
-                    } else {
-                        console.warn("Falha no login do totem:", result.message);
-                        // Exibir mensagem de erro
-                        showMessage(result.message, 'error');
-                    }
-                } catch (error) {
-                    console.error("Erro ao processar login do totem:", error);
-                    showLoading(false);
-                    showMessage('Erro ao processar login. Tente novamente.', 'error');
+                if (categories?.length) {
+                    categories.forEach(category => {
+                        const div = document.createElement('div');
+                        div.className = 'mb-4';
+                        div.innerHTML = `<h3 class="text-md font-medium">${category.category_name}</h3>`;
+                        
+                        category.services.forEach(service => {
+                            const button = document.createElement('button');
+                            button.className = 'w-full bg-indigo-500 text-white py-2 px-3 rounded-md hover:bg-indigo-600 mb-2 text-left';
+                            button.textContent = `${service.service_name} (Espera: ${service.estimated_wait_time})`;
+                            button.addEventListener('click', () => generateTicket(branchId, service.service_id));
+                            div.appendChild(button);
+                        });
+                        
+                        services.appendChild(div);
+                    });
+                } else {
+                    services.innerHTML = '<p class="text-gray-600">Nenhum serviço disponível.</p>';
                 }
-            });
-
-            // Adicionar event listener para tecla Enter no campo de senha
-            const passwordInput = document.getElementById('password');
-            if (passwordInput) {
-                passwordInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        loginForm.dispatchEvent(new Event('submit'));
-                    }
-                });
+            } catch (error) {
+                showMessage('Erro ao carregar serviços', 'error');
+            } finally {
+                showLoading(false);
             }
-        } else {
-            console.warn("Formulário de login do totem não encontrado!");
         }
+
+        async function generateTicket(branchId, serviceId) {
+            showLoading(true);
+            try {
+                const response = await axios.post(
+                    `${API_BASE}/api/totem/branches/${branchId}/services/${serviceId}/ticket`,
+                    {},
+                    { headers: { 'Totem-Token': authService.token }, responseType: 'blob' }
+                );
+
+                if (response.headers['content-type'] !== 'application/pdf') {
+                    throw new Error('Não é um PDF');
+                }
+
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ticket_${serviceId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+
+                showMessage('Ticket gerado!', 'success');
+            } catch (error) {
+                showMessage('Erro ao gerar ticket', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        loadServices();
     }
 });
