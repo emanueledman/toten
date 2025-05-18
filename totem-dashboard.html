@@ -28,14 +28,19 @@
         <button id="logout" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md">Sair</button>
     </header>
     <main class="p-8">
-        <p class="text-lg">Bem-vindo ao dashboard do totem. Aqui você pode listar serviços e gerar tickets.</p>
-        <!-- Adicione conteúdo do dashboard aqui (ex.: lista de serviços, botões para tickets) -->
+        <p class="text-lg mb-6">Bem-vindo ao dashboard do totem. Selecione um serviço para gerar um ticket.</p>
+        <div id="services-container" class="grid gap-6">
+            <!-- Serviços serão injetados aqui dinamicamente -->
+        </div>
+        <div id="no-services" class="hidden text-center text-gray-600 mt-4">
+            Nenhum serviço disponível no momento.
+        </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="central.js"></script>
     <script src="totem-auth-service.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.info("Inicializando página do totem...");
 
             // Verificar autenticação
@@ -57,8 +62,143 @@
                 });
             }
 
+            // Carregar serviços
+            await loadServices();
+
             console.info("Página do totem carregada com sucesso");
         });
+
+        async function loadServices() {
+            showLoading(true);
+            try {
+                const response = await totemAuthService.makeAuthenticatedRequest({
+                    method: 'GET',
+                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
+                });
+
+                const { categories, message } = response.data;
+                const servicesContainer = document.getElementById('services-container');
+                const noServicesDiv = document.getElementById('no-services');
+
+                if (!categories || categories.length === 0) {
+                    noServicesDiv.classList.remove('hidden');
+                    servicesContainer.innerHTML = '';
+                    showMessage(message, 'info');
+                    return;
+                }
+
+                noServicesDiv.classList.add('hidden');
+                servicesContainer.innerHTML = '';
+
+                categories.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'bg-white p-6 rounded-lg shadow-md';
+                    categoryDiv.innerHTML = `
+                        <h2 class="text-xl font-semibold mb-4">${category.category_name}</h2>
+                        <div class="grid gap-4">
+                            ${category.services.map(service => `
+                                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-md">
+                                    <div>
+                                        <p class="font-medium">${service.service_name}</p>
+                                        <p class="text-sm text-gray-600">Tickets ativos: ${service.active_tickets}</p>
+                                        <p class="text-sm text-gray-600">Tempo estimado: ${service.estimated_wait_time}</p>
+                                    </div>
+                                    <button
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
+                                        onclick="generateTicket(${service.service_id}, '${service.service_name}')"
+                                    >
+                                        Gerar Ticket
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    servicesContainer.appendChild(categoryDiv);
+                });
+
+                showMessage('Serviços carregados com sucesso', 'success');
+            } catch (error) {
+                console.error('Erro ao carregar serviços:', error);
+                const message = error.response?.data?.error || 'Erro ao carregar serviços';
+                showMessage(message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function generateTicket(serviceId, serviceName) {
+            showLoading(true);
+            try {
+                const response = await totemAuthService.makeAuthenticatedRequest({
+                    method: 'POST',
+                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services/${serviceId}/ticket`,
+                    responseType: 'blob'
+                });
+
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ticket_${serviceName}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                showMessage(`Ticket gerado para ${serviceName}`, 'success');
+            } catch (error) {
+                console.error('Erro ao gerar ticket:', error);
+                const message = error.response?.data?.error || 'Erro ao gerar ticket';
+                showMessage(message, 'error');
+
+                // Tentar rota fallback
+                await tryFallbackTicket(serviceId, serviceName);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function tryFallbackTicket(serviceId, serviceName) {
+            showLoading(true);
+            try {
+                const queueResponse = await totemAuthService.makeAuthenticatedRequest({
+                    method: 'GET',
+                    url: `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/services`
+                });
+
+                const queue = queueResponse.data.categories
+                    .flatMap(cat => cat.services)
+                    .find(s => s.service_id === serviceId);
+
+                if (!queue) {
+                    showMessage('Fila não encontrada para o serviço', 'error');
+                    return;
+                }
+
+                const response = await axios.post(
+                    `${totemAuthService.API_BASE}/api/totem/branches/${totemAuthService.getTotemInfo().branchId}/queues/totem/fallback`,
+                    { queue_id: queue.queue_id },
+                    {
+                        headers: { 'Totem-Token': 'h0gmVAmsj5kyhyVIlkZFF3lG4GJiqomF' },
+                        responseType: 'blob'
+                    }
+                );
+
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ticket_${serviceName}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                showMessage(`Ticket gerado para ${serviceName} (via fallback)`, 'success');
+            } catch (error) {
+                console.error('Erro ao gerar ticket via fallback:', error);
+                const message = error.response?.data?.error || 'Erro ao gerar ticket via fallback';
+                showMessage(message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
     </script>
 </body>
 </html>

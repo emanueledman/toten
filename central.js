@@ -11,10 +11,8 @@ function showLoading(show = true) {
 function showMessage(message, type = 'success') {
     console.debug(`Exibindo mensagem (${type}): ${message}`);
     
-    // Verificar se existe container de toast
     let toastContainer = document.getElementById('toast-container');
     
-    // Se não existir, criar um
     if (!toastContainer) {
         toastContainer = document.createElement('div');
         toastContainer.id = 'toast-container';
@@ -22,7 +20,6 @@ function showMessage(message, type = 'success') {
         document.body.appendChild(toastContainer);
     }
     
-    // Criar elemento toast
     const toast = document.createElement('div');
     toast.className = `p-4 rounded-lg shadow-lg transition-all duration-300 ${
         type === 'success' ? 'bg-green-100 text-green-800' :
@@ -43,16 +40,13 @@ function showMessage(message, type = 'success') {
         </div>
     `;
     
-    // Adicionar ao container
     toastContainer.appendChild(toast);
     
-    // Configurar botão de fechar
     toast.querySelector('button').addEventListener('click', () => {
         toast.classList.add('opacity-0');
         setTimeout(() => toast.remove(), 300);
     });
     
-    // Auto-fechar após 5 segundos
     setTimeout(() => {
         if (toast.parentElement) {
             toast.classList.add('opacity-0');
